@@ -23,7 +23,29 @@
             <h1>Análisis</h1>
             <p class="muted-label" id="subtituloFecha">Cargando datos...</p>
           </div>
-          <button class="btn primary" id="btnRefrescar">↻ Actualizar</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn primary" id="btnRefrescar">↻ Actualizar</button>
+            <a
+              id="btnExportarExcel"
+              class="btn"
+              href="/api/reportes/exportar-excel"
+              download
+              title="Descargar reporte Excel (4 hojas: Resumen, Por Grupo, Faltas Críticas, Tendencia)"
+              style="background:#16a34a;color:#fff;text-decoration:none"
+            >
+              📥 Excel
+            </a>
+            <a
+              id="btnExportarPDF"
+              class="btn"
+              href="/api/reportes/exportar-pdf"
+              download
+              title="Descargar reporte PDF con resumen, tablas y tendencia"
+              style="background:#dc2626;color:#fff;text-decoration:none"
+            >
+              📄 PDF
+            </a>
+          </div>
         </header>
 
         <!-- ── SECCIÓN 1: ALERTAS ─────────────────────────────── -->
