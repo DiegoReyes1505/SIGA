@@ -28,17 +28,55 @@ Sistema web para control de asistencias escolares mediante sensor de huella digi
 ```
 
 ## Módulos
+
 | # | Módulo | Estado |
 |---|--------|--------|
 | 0 | Setup, DB, estructura | ✅ Completo |
-| 1 | Agente serial local   | ✅ Completo |
-| 2 | Alta de alumnos       | 🔜 Pendiente |
-| 3 | Registro de asistencia| 🔜 Pendiente |
-| 4 | Historial             | 🔜 Pendiente |
-| 5 | Dashboard en tiempo real | 🔜 Pendiente |
-| 6 | Inteligencia de negocios | 🔜 Pendiente |
-| 7 | Exportación PDF/Excel | 🔜 Pendiente |
-| 8 | Despliegue Railway    | 🔜 Pendiente |
+| 1 | Agente serial local | ✅ Completo |
+| 2 | Alta de alumnos | ✅ Completo |
+| 3 | Registro de asistencia | ✅ Completo |
+| 4 | Historial | ✅ Completo |
+| 5 | Dashboard en tiempo real | ✅ Completo |
+| 6 | Inteligencia de negocios | ✅ Completo |
+| 7 | Exportación PDF/Excel | ✅ Completo |
+| 8 | Despliegue Railway | 🔜 Pendiente |
+
+## Módulos Adicionales
+
+| Módulo | Descripción | Archivos |
+|--------|-------------|---------|
+| Grupos | Gestión de grupos escolares | `routes/grupos.js`, `controllers/grupos.js` |
+| Materias | Catálogo de materias | `routes/materias.js`, `controllers/materias.js` |
+| Horarios | Programación de clases | `routes/horarios.js`, `controllers/horarios.js` |
+| Permisos / Justificantes | Gestión de justificantes de inasistencia | `routes/permisos.js`, `controllers/permisos.js`, `public/permisos.html` |
+| Sensor | Control directo del sensor AS608 | `routes/sensor.js`, `controllers/sensor.js` |
+
+## Estructura del Proyecto
+
+```
+SIGA/
+├── agent/
+│   └── index.js              # Agente local (PC con Arduino)
+├── database/
+│   ├── migrations/           # Scripts de creación de tablas
+│   └── seeds/                # Datos de prueba
+├── public/
+│   ├── alumnos.html          # Alta y gestión de alumnos
+│   ├── analisis.html         # Inteligencia de negocios
+│   ├── dashboard.html        # Dashboard en tiempo real
+│   ├── historial.html        # Historial de asistencias
+│   ├── huellas-asistencias.html
+│   ├── permisos.html         # Justificantes
+│   ├── css/
+│   └── js/
+└── server/
+    ├── index.js              # Punto de entrada del servidor
+    ├── controllers/          # Lógica de negocio
+    ├── routes/               # Definición de endpoints REST
+    ├── middleware/            # Middlewares (auth, validación)
+    ├── services/             # Servicios reutilizables
+    └── utils/                # Utilidades
+```
 
 ## Instalación
 
