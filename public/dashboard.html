@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGA - Dashboard</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">SIGA</div>
+        <div id="readerStatusBadge" class="reader-badge">
+          Cargando lector...
+        </div>
+        <nav id="sidebarNav" class="sidebar-nav"></nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p id="fechaHoy"></p>
+          </div>
+          <button class="btn primary" id="btnRefrescar">↻ Actualizar</button>
+        </header>
+
+        <!-- KPIs HOY -->
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-ok">
+            <div class="kpi-valor" id="kpiAsistenciasHoy">—</div>
+            <div class="kpi-label">Asistencias hoy</div>
+          </div>
+          <div class="kpi-card kpi-warn">
+            <div class="kpi-valor" id="kpiRetardosHoy">—</div>
+            <div class="kpi-label">Retardos hoy</div>
+          </div>
+          <div class="kpi-card kpi-danger">
+            <div class="kpi-valor" id="kpiFaltasHoy">—</div>
+            <div class="kpi-label">Faltas hoy</div>
+          </div>
+          <div class="kpi-card kpi-info">
+            <div class="kpi-valor" id="kpiPermisosHoy">—</div>
+            <div class="kpi-label">Permisos hoy</div>
+          </div>
+        </div>
+
+        <!-- RESUMEN DEL MES -->
+        <section class="card">
+          <h2>Resumen del mes</h2>
+          <div class="kpi-grid kpi-grid-mes">
+            <div class="kpi-card kpi-card-sm kpi-ok">
+              <div class="kpi-valor" id="mesAsistencias">—</div>
+              <div class="kpi-label">Asistencias</div>
+            </div>
+            <div class="kpi-card kpi-card-sm kpi-warn">
+              <div class="kpi-valor" id="mesRetardos">—</div>
+              <div class="kpi-label">Retardos</div>
+            </div>
+            <div class="kpi-card kpi-card-sm kpi-danger">
+              <div class="kpi-valor" id="mesFaltas">—</div>
+              <div class="kpi-label">Faltas</div>
+            </div>
+            <div class="kpi-card kpi-card-sm kpi-info">
+              <div class="kpi-valor" id="mesPermisos">—</div>
+              <div class="kpi-label">Permisos</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GRÁFICAS FILA 1: Dona + Tendencia diaria -->
+        <div class="dash-cols-2">
+          <section class="card">
+            <h2>Distribución del mes</h2>
+            <!-- FIX: contenedor con ancho máximo y centrado -->
+            <div class="chart-wrap-dona">
+              <canvas id="chartDona"></canvas>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>
+              Tendencia diaria
+              <span class="muted-label">(últimos 14 días)</span>
+            </h2>
+            <div class="chart-wrap chart-wrap-md">
+              <canvas id="chartLinea"></canvas>
+            </div>
+          </section>
+        </div>
+
+        <!-- GRÁFICAS FILA 2: Grupos + Materias -->
+        <div class="dash-cols-2">
+          <section class="card">
+            <h2>
+              Comparativa por grupo <span class="muted-label">(este mes)</span>
+            </h2>
+            <div class="chart-wrap chart-wrap-lg">
+              <canvas id="chartGrupos"></canvas>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>
+              Asistencia por materia <span class="muted-label">(este mes)</span>
+            </h2>
+            <div class="chart-wrap chart-wrap-lg">
+              <canvas id="chartMaterias"></canvas>
+            </div>
+          </section>
+        </div>
+
+        <!-- TABLAS: Faltas + Retardos + Feed -->
+        <div class="dash-cols-3">
+          <section class="card">
+            <h2>Más faltas <span class="muted-label">(30 días)</span></h2>
+            <div id="tablaFaltas"><p class="muted-label">Cargando...</p></div>
+          </section>
+
+          <section class="card">
+            <h2>Más retardos <span class="muted-label">(30 días)</span></h2>
+            <div id="tablaRetardos"><p class="muted-label">Cargando...</p></div>
+          </section>
+
+          <section class="card">
+            <div class="toolbar">
+              <h2 style="margin: 0">Tiempo real</h2>
+              <span id="feedContador" class="muted-label"></span>
+            </div>
+            <div id="feedAsistencias" class="feed-lista">
+              <p class="muted-label" style="padding: 12px 0">
+                Esperando eventos...
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+  </body>
+</html>

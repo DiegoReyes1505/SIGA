@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Permisos</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <h2>SIGA</h2>
+        <div id="readerStatusBadge" class="reader-badge">
+          Verificando lector...
+        </div>
+        <nav id="sidebarNav"></nav>
+      </aside>
+
+      <main class="content">
+        <section class="card">
+          <h1 id="formTitle">Nuevo permiso</h1>
+          <form id="permisoForm">
+            <input type="hidden" id="permisoId" />
+
+            <div class="grid">
+              <div>
+                <label>Alumno</label>
+                <select id="alumno_id" required></select>
+              </div>
+
+              <div>
+                <label>Fecha inicio</label>
+                <input type="date" id="fecha_inicio" required />
+              </div>
+
+              <div>
+                <label>Fecha fin</label>
+                <input type="date" id="fecha_fin" required />
+              </div>
+
+              <div class="full">
+                <label>Motivo</label>
+                <textarea id="motivo" required></textarea>
+              </div>
+
+              <div class="full">
+                <label>Clases afectadas</label>
+                <div id="listaHorarios" class="checks"></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="btn success">Guardar</button>
+              <button type="button" id="btnCancelar" class="btn">
+                Cancelar
+              </button>
+            </div>
+          </form>
+
+          <div id="estadoPermiso" class="status hidden"></div>
+        </section>
+
+        <section class="card">
+          <h2>Permisos registrados</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Alumno</th>
+                <th>Rango</th>
+                <th>Motivo</th>
+                <th>Clases</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaPermisos"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/permisos.js"></script>
+  </body>
+</html>

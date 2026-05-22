@@ -1,0 +1,317 @@
+/* ================================================================
+   SIGA — Módulo Análisis (analisis.css)
+   Importa las variables de app.css, solo añade lo específico
+   ================================================================ */
+
+/* ── Layout de sección con controles ──────────────────────── */
+.seccion-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.seccion-header h2 {
+  margin: 0;
+}
+
+.alertas-controles {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ctrl-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.input-sm {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  width: auto;
+  min-width: 80px;
+}
+
+.input-sm:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ── Grid de alertas ──────────────────────────────────────── */
+.alertas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.alerta-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.alerta-card:hover {
+  border-color: var(--primary);
+}
+
+.alerta-card.riesgo-alto {
+  border-left: 3px solid var(--danger);
+}
+
+.alerta-card.riesgo-medio {
+  border-left: 3px solid var(--warning);
+}
+
+.alerta-nombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.alerta-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.alerta-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.alerta-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.alerta-badge.faltas {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+.alerta-badge.retardos {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fcd34d;
+}
+.alerta-badge.permisos {
+  background: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
+}
+
+.alertas-vacio {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 32px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.alertas-vacio .icono-ok {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+/* ── Ranking de grupos ────────────────────────────────────── */
+.grupos-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grupo-fila {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  align-items: center;
+  gap: 12px;
+}
+
+.grupo-nombre {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.grupo-barra-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.barra-stack {
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--panel-2);
+}
+
+.barra-seg {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.barra-seg.asistencia {
+  background: #16a34a;
+}
+.barra-seg.retardo {
+  background: #d97706;
+}
+.barra-seg.falta {
+  background: #dc2626;
+}
+.barra-seg.permiso {
+  background: #2563eb;
+}
+
+.barra-leyenda {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.grupo-tasa {
+  font-size: 20px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.grupo-tasa.alta {
+  color: #16a34a;
+}
+.grupo-tasa.media {
+  color: #d97706;
+}
+.grupo-tasa.baja {
+  color: #dc2626;
+}
+
+/* ── Ranking de materias ──────────────────────────────────── */
+.materias-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.materia-fila {
+  display: grid;
+  grid-template-columns: 160px 1fr 60px;
+  align-items: center;
+  gap: 12px;
+}
+
+.materia-nombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.materia-tasa {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Tablas críticos ──────────────────────────────────────── */
+.tabla-criticos-analisis {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabla-criticos-analisis th {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla-criticos-analisis td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla-criticos-analisis tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-criticos-analisis tr:hover td {
+  background: var(--panel-2);
+}
+
+.link-historial {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.link-historial:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ── Gráficas ─────────────────────────────────────────────── */
+.chart-wrap-xl {
+  position: relative;
+  height: 280px;
+}
+
+.chart-wrap-xl canvas {
+  max-height: 280px;
+}
+
+/* ── Layout 2 columnas (reutiliza dashboard) ──────────────── */
+.dash-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .seccion-header {
+    flex-direction: column;
+  }
+
+  .dash-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .grupo-fila {
+    grid-template-columns: 70px 1fr 60px;
+  }
+
+  .materia-fila {
+    grid-template-columns: 120px 1fr 50px;
+  }
+}

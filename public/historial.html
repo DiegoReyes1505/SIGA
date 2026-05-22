@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGA - Historial de asistencias</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">SIGA</div>
+        <div id="readerStatusBadge" class="reader-badge">
+          Cargando lector...
+        </div>
+        <nav id="sidebarNav" class="sidebar-nav"></nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <h1>Historial de asistencias</h1>
+          <p>Consulta y filtra el registro histórico de asistencias.</p>
+        </header>
+
+        <!-- Filtros -->
+        <section class="card">
+          <h2>Filtros</h2>
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="filtroGrupo">Grupo</label>
+              <select id="filtroGrupo">
+                <option value="">Todos los grupos</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filtroAlumno">Alumno</label>
+              <select id="filtroAlumno">
+                <option value="">Todos los alumnos</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filtroTipo">Tipo</label>
+              <select id="filtroTipo">
+                <option value="">Todos</option>
+                <option value="asistencia">Asistencia</option>
+                <option value="retardo">Retardo</option>
+                <option value="falta">Falta</option>
+                <option value="permiso">Permiso</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filtroFechaInicio">Fecha inicio</label>
+              <input type="date" id="filtroFechaInicio" />
+            </div>
+
+            <div class="filter-group">
+              <label for="filtroFechaFin">Fecha fin</label>
+              <input type="date" id="filtroFechaFin" />
+            </div>
+          </div>
+
+          <div class="filters-actions">
+            <button class="btn primary" id="btnBuscar">Buscar</button>
+            <button class="btn" id="btnLimpiar">Limpiar filtros</button>
+          </div>
+        </section>
+
+        <!-- Resumen por tipo -->
+        <section class="card" id="seccionResumen" style="display: none">
+          <div id="resumenTexto" class="resumen-asistencias"></div>
+        </section>
+
+        <!-- Tabla -->
+        <section class="card">
+          <div class="toolbar">
+            <h2 style="margin: 0">Resultados</h2>
+            <span id="totalRegistros" class="muted-label"></span>
+          </div>
+
+          <div id="estadoHistorial" class="status hidden"></div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Hora entrada</th>
+                  <th>Alumno</th>
+                  <th>Matrícula</th>
+                  <th>Grupo</th>
+                  <th>Materia</th>
+                  <th>Tipo</th>
+                  <th>Origen</th>
+                </tr>
+              </thead>
+              <tbody id="tablaHistorial">
+                <tr>
+                  <td colspan="8" class="td-empty">
+                    Usa los filtros para buscar asistencias.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <div id="paginacion" class="paginacion hidden">
+            <button class="btn btn-sm" id="btnAnterior">← Anterior</button>
+            <span id="infoPagina" class="pagina-info"></span>
+            <button class="btn btn-sm" id="btnSiguiente">Siguiente →</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/historial.js"></script>
+  </body>
+</html>

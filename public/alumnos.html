@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGA - Alumnos</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/alumnos.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">SIGA</div>
+        <div id="readerStatusBadge" class="reader-badge">
+          Cargando lector...
+        </div>
+        <nav id="sidebarNav" class="sidebar-nav"></nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <h1>Alumnos</h1>
+          <p>Alta, edición, baja lógica y registro de huella.</p>
+        </header>
+
+        <section class="card">
+          <h2 id="formTitle">Nuevo alumno</h2>
+          <form id="alumnoForm">
+            <input type="hidden" id="alumnoId" />
+            <div class="grid">
+              <div>
+                <label for="matricula">Matrícula</label>
+                <input type="text" id="matricula" required />
+              </div>
+              <div>
+                <label for="grupo_id">Grupo</label>
+                <select id="grupo_id" required></select>
+              </div>
+              <div>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" required />
+              </div>
+              <div>
+                <label for="apellido_pat">Apellido paterno</label>
+                <input type="text" id="apellido_pat" required />
+              </div>
+              <div>
+                <label for="apellido_mat">Apellido materno</label>
+                <input type="text" id="apellido_mat" />
+              </div>
+            </div>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="registrarHuella" checked />
+              <span>Registrar huella inmediatamente después de guardar</span>
+            </label>
+
+            <div class="actions">
+              <button type="submit" class="btn primary">Guardar alumno</button>
+              <button type="button" class="btn" id="btnCancelar">
+                Cancelar edición
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <div class="toolbar">
+            <h2>Listado de alumnos</h2>
+            <div class="toolbar-right">
+              <input
+                type="text"
+                id="busqueda"
+                placeholder="Buscar por matrícula o nombre"
+              />
+              <label class="checkbox-row compact">
+                <input type="checkbox" id="verInactivos" />
+                <span>Mostrar desactivados</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Matrícula</th>
+                  <th>Nombre</th>
+                  <th>Grupo</th>
+                  <th>Estatus</th>
+                  <th>Huella</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tablaAlumnos"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ── Toast container ──────────────────────────────────── -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ── Modal enroll ─────────────────────────────────────── -->
+    <div
+      id="enrollModal"
+      class="enroll-overlay hidden"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="enroll-modal">
+        <div class="enroll-header">
+          <span class="enroll-title">Registro de huella</span>
+          <button
+            class="enroll-close"
+            id="btnCerrarModal"
+            aria-label="Cancelar"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div class="enroll-alumno-info" id="enrollAlumnoInfo"></div>
+
+        <!-- Pasos -->
+        <div class="enroll-pasos">
+          <div class="enroll-paso" id="paso1">
+            <div class="paso-icono">1</div>
+            <div class="paso-texto">Primer lectura</div>
+          </div>
+          <div class="enroll-linea"></div>
+          <div class="enroll-paso" id="paso2">
+            <div class="paso-icono">2</div>
+            <div class="paso-texto">Segunda lectura</div>
+          </div>
+          <div class="enroll-linea"></div>
+          <div class="enroll-paso" id="paso3">
+            <div class="paso-icono">&#10003;</div>
+            <div class="paso-texto">Confirmado</div>
+          </div>
+        </div>
+
+        <!-- Área de animación / instrucción -->
+        <div class="enroll-sensor-area" id="enrollSensorArea">
+          <div class="sensor-pulso" id="sensorPulso"></div>
+          <div class="sensor-instruccion" id="sensorInstruccion">
+            Preparando lector...
+          </div>
+        </div>
+
+        <div class="enroll-mensaje" id="enrollMensaje"></div>
+
+        <button
+          class="btn danger"
+          id="btnCancelarEnroll"
+          style="width: 100%; margin-top: 8px"
+        >
+          Cancelar registro
+        </button>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/alumnos.js"></script>
+  </body>
+</html>

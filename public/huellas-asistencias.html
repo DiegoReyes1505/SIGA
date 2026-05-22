@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGA - Huellas y asistencias</title>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">SIGA</div>
+        <div id="readerStatusBadge" class="reader-badge">
+          Cargando lector...
+        </div>
+        <nav id="sidebarNav" class="sidebar-nav"></nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <h1>Huellas y asistencias</h1>
+          <p>Estado del lector y asistencias del día.</p>
+        </header>
+
+        <section class="card">
+          <h2>Estado del lector</h2>
+          <div id="estadoLectorDetalle" class="status">Cargando estado...</div>
+        </section>
+
+        <section class="card">
+          <div class="toolbar">
+            <h2>Asistencias de hoy</h2>
+            <button class="btn" id="btnRefrescarAsistencias">Refrescar</button>
+          </div>
+
+          <div id="estadoAsistencias" class="status hidden"></div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Matrícula</th>
+                  <th>Alumno</th>
+                  <th>Grupo</th>
+                  <th>Materia</th>
+                  <th>Tipo</th>
+                </tr>
+              </thead>
+              <tbody id="tablaAsistenciasHoy"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/huellas-asistencias.js"></script>
+  </body>
+</html>

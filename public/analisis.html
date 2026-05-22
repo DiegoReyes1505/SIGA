@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGA — Análisis</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/analisis.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">SIGA</div>
+        <div id="readerStatusBadge" class="reader-badge">
+          Cargando lector...
+        </div>
+        <nav id="sidebarNav" class="sidebar-nav"></nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <div>
+            <h1>Análisis</h1>
+            <p class="muted-label" id="subtituloFecha">Cargando datos...</p>
+          </div>
+          <button class="btn primary" id="btnRefrescar">↻ Actualizar</button>
+        </header>
+
+        <!-- ── SECCIÓN 1: ALERTAS ─────────────────────────────── -->
+        <section class="card" id="seccionAlertas">
+          <div class="seccion-header">
+            <h2>⚠ Alumnos en riesgo</h2>
+            <div class="alertas-controles">
+              <label class="ctrl-label"
+                >Filtrar por
+                <select id="modoAlertas" class="input-sm">
+                  <option value="ambos" selected>Faltas y retardos</option>
+                  <option value="faltas">Solo faltas</option>
+                  <option value="retardos">Solo retardos</option>
+                </select>
+              </label>
+              <label class="ctrl-label" id="wrapUmbralFaltas"
+                >Umbral faltas
+                <input
+                  type="number"
+                  id="umbralFaltas"
+                  value="3"
+                  min="1"
+                  max="20"
+                  class="input-sm"
+                />
+              </label>
+              <label class="ctrl-label" id="wrapUmbralRetardos"
+                >Umbral retardos
+                <input
+                  type="number"
+                  id="umbralRetardos"
+                  value="3"
+                  min="1"
+                  max="20"
+                  class="input-sm"
+                />
+              </label>
+              <label class="ctrl-label"
+                >Período (días)
+                <select id="diasAlertas" class="input-sm">
+                  <option value="7">7 días</option>
+                  <option value="14">14 días</option>
+                  <option value="30" selected>30 días</option>
+                  <option value="60">60 días</option>
+                  <option value="90">90 días</option>
+                </select>
+              </label>
+              <button class="btn btn-sm primary" id="btnFiltrarAlertas">
+                Aplicar
+              </button>
+            </div>
+          </div>
+          <div id="alertasGrid" class="alertas-grid">
+            <p class="muted-label">Cargando...</p>
+          </div>
+        </section>
+
+        <!-- ── SECCIÓN 2: TASAS POR GRUPO ────────────────────── -->
+        <section class="card">
+          <div class="seccion-header">
+            <h2>Tasa de asistencia por grupo</h2>
+            <div class="alertas-controles">
+              <label class="ctrl-label"
+                >Desde
+                <input type="date" id="grupoDesde" class="input-sm" />
+              </label>
+              <label class="ctrl-label"
+                >Hasta
+                <input type="date" id="grupoHasta" class="input-sm" />
+              </label>
+              <button class="btn btn-sm primary" id="btnFiltrarGrupos">
+                Aplicar
+              </button>
+            </div>
+          </div>
+          <div id="gruposRanking" class="grupos-ranking">
+            <p class="muted-label">Cargando...</p>
+          </div>
+        </section>
+
+        <!-- ── SECCIÓN 3: TENDENCIA HISTÓRICA ────────────────── -->
+        <section class="card">
+          <div class="seccion-header">
+            <h2>Tendencia histórica</h2>
+            <div class="alertas-controles">
+              <label class="ctrl-label"
+                >Período
+                <select id="diasTendencia" class="input-sm">
+                  <option value="7">7 días</option>
+                  <option value="14" selected>14 días</option>
+                  <option value="30">30 días</option>
+                  <option value="60">60 días</option>
+                  <option value="90">90 días</option>
+                </select>
+              </label>
+              <button class="btn btn-sm primary" id="btnFiltrarTendencia">
+                Aplicar
+              </button>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-xl">
+            <canvas id="chartTendencia"></canvas>
+          </div>
+        </section>
+
+        <!-- ── SECCIÓN 4: TENDENCIA MENSUAL ──────────────────── -->
+        <section class="card">
+          <h2>
+            Evolución mensual <span class="muted-label">(últimos 6 meses)</span>
+          </h2>
+          <div class="chart-wrap chart-wrap-xl">
+            <canvas id="chartMensual"></canvas>
+          </div>
+        </section>
+
+        <!-- ── SECCIÓN 5: RANKING MATERIAS ───────────────────── -->
+        <section class="card">
+          <div class="seccion-header">
+            <h2>Rendimiento por materia</h2>
+            <div class="alertas-controles">
+              <label class="ctrl-label"
+                >Desde
+                <input type="date" id="materiaDesde" class="input-sm" />
+              </label>
+              <label class="ctrl-label"
+                >Hasta
+                <input type="date" id="materiaHasta" class="input-sm" />
+              </label>
+              <button class="btn btn-sm primary" id="btnFiltrarMaterias">
+                Aplicar
+              </button>
+            </div>
+          </div>
+          <div id="materiasRanking" class="materias-ranking">
+            <p class="muted-label">Cargando...</p>
+          </div>
+        </section>
+
+        <!-- ── SECCIÓN 6: TABLAS CRÍTICOS ─────────────────────── -->
+        <div class="dash-cols-2">
+          <section class="card">
+            <h2>
+              Top faltas
+              <span class="muted-label" id="labelDiasFaltas">(30 días)</span>
+            </h2>
+            <div id="tablaFaltasCriticas">
+              <p class="muted-label">Cargando...</p>
+            </div>
+          </section>
+          <section class="card">
+            <h2>
+              Top retardos
+              <span class="muted-label" id="labelDiasRetardos">(30 días)</span>
+            </h2>
+            <div id="tablaRetardosCriticos">
+              <p class="muted-label">Cargando...</p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/analisis.js"></script>
+  </body>
+</html>
