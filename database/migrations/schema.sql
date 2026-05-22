@@ -1,656 +1,251 @@
--- ================================================================
--- SIGA — Sistema Inteligente de Gestión de Asistencias
--- Schema v1.0
--- ================================================================
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: siga_db
+-- ------------------------------------------------------
+-- Server version	8.0.45
 
-DROP DATABASE IF EXISTS siga_db; 
-CREATE DATABASE IF NOT EXISTS siga_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-USE siga_db;
+--
+-- Table structure for table `alumnos`
+--
 
--- ── Grupos ───────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS grupos (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  nombre      VARCHAR(50)  NOT NULL,           -- Ej: "1°A", "2°B"
-  descripcion VARCHAR(100),
-  activo      TINYINT(1)   NOT NULL DEFAULT 1,
-  creado_en   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+DROP TABLE IF EXISTS `alumnos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `alumnos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `matricula` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nombre` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `apellido_pat` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `apellido_mat` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `grupo_id` int unsigned NOT NULL,
+  `huella_id` tinyint unsigned DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `matricula` (`matricula`),
+  KEY `grupo_id` (`grupo_id`),
+  KEY `idx_alumnos_huella` (`huella_id`),
+  CONSTRAINT `alumnos_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ── Materias ─────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS materias (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  nombre      VARCHAR(100) NOT NULL,            -- Ej: "Matemáticas"
-  clave       VARCHAR(20)  NOT NULL UNIQUE,     -- Ej: "MAT-01"
-  activo      TINYINT(1)   NOT NULL DEFAULT 1,
-  creado_en   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+--
+-- Dumping data for table `alumnos`
+--
 
--- ── Horarios (grupo + materia + día + hora) ─────────────────
-CREATE TABLE IF NOT EXISTS horarios (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  grupo_id      INT UNSIGNED NOT NULL,
-  materia_id    INT UNSIGNED NOT NULL,
-  dia_semana    TINYINT NOT NULL,               -- 1=Lun … 5=Vie
-  hora_inicio   TIME    NOT NULL,               -- Ej: 08:00:00
-  hora_fin      TIME    NOT NULL,               -- Ej: 09:00:00
-  tolerancia_min INT UNSIGNED NOT NULL DEFAULT 10, -- minutos de gracia
-  FOREIGN KEY (grupo_id)   REFERENCES grupos(id)  ON DELETE CASCADE,
-  FOREIGN KEY (materia_id) REFERENCES materias(id) ON DELETE CASCADE,
-  UNIQUE KEY uq_grupo_materia_dia_hora (grupo_id, dia_semana, hora_inicio)
-);
+LOCK TABLES `alumnos` WRITE;
+/*!40000 ALTER TABLE `alumnos` DISABLE KEYS */;
+INSERT INTO `alumnos` VALUES (1,'A001','Carlos','Ramírez','López',1,NULL,1,'2026-05-19 07:01:26'),(2,'A002','María','Hernández','Martínez',1,NULL,1,'2026-05-19 07:01:26'),(3,'A003','José','González','Pérez',1,NULL,1,'2026-05-19 07:01:26'),(4,'A004','Ana','Torres','Sánchez',1,NULL,1,'2026-05-19 07:01:26'),(5,'A005','Luis','Flores','García',1,NULL,1,'2026-05-19 07:01:26'),(6,'A006','Sofía','Morales','Jiménez',1,NULL,1,'2026-05-19 07:01:26'),(7,'A007','Diego','Reyes','Vargas',1,1,1,'2026-05-19 07:01:26'),(8,'A008','Valeria','Cruz','Mendoza',1,NULL,1,'2026-05-19 07:01:26'),(9,'A009','Miguel','Ramos','Ortiz',1,NULL,1,'2026-05-19 07:01:26'),(10,'A010','Fernanda','Díaz','Castillo',1,NULL,1,'2026-05-19 07:01:26'),(11,'B001','Jorge','Mendoza','Ríos',2,NULL,1,'2026-05-19 07:01:26'),(12,'B002','Daniela','Vega','Luna',2,NULL,1,'2026-05-19 07:01:26'),(13,'B003','Andrés','Salinas','Mora',2,NULL,1,'2026-05-19 07:01:26'),(14,'B004','Camila','Gutiérrez','Espinoza',2,NULL,1,'2026-05-19 07:01:26'),(15,'B005','Ricardo','Jiménez','Fuentes',2,NULL,1,'2026-05-19 07:01:26'),(16,'B006','Paola','Rojas','Delgado',2,NULL,1,'2026-05-19 07:01:26'),(17,'B007','Sebastián','Núñez','Medina',2,NULL,1,'2026-05-19 07:01:26'),(18,'B008','Valentina','Aguilar','Cervantes',2,NULL,1,'2026-05-19 07:01:26'),(19,'C001','Eduardo','Paredes','Villanueva',3,NULL,1,'2026-05-19 07:01:26'),(20,'C002','Gabriela','Espinosa','Campos',3,NULL,1,'2026-05-19 07:01:26'),(21,'C003','Héctor','Guerrero','Ibáñez',3,NULL,1,'2026-05-19 07:01:26'),(22,'C004','Isabella','Peña','Contreras',3,NULL,1,'2026-05-19 07:01:26'),(23,'C005','Kevin','Soto','Herrera',3,NULL,1,'2026-05-19 07:01:26'),(24,'C006','Laura','Miranda','Cabrera',3,NULL,1,'2026-05-19 07:01:26'),(25,'C007','Martín','Castillo','Navarro',3,NULL,1,'2026-05-19 07:01:26'),(26,'C008','Natalia','Ávila','Domínguez',3,NULL,1,'2026-05-19 07:01:26'),(27,'D001','Omar','Serrano','Fuentes',4,NULL,1,'2026-05-19 07:01:26'),(28,'D002','Patricia','Lara','Sandoval',4,NULL,1,'2026-05-19 07:01:26'),(29,'D003','Rodrigo','Montes','Acosta',4,NULL,1,'2026-05-19 07:01:26'),(30,'D004','Sara','Valencia','Mejía',4,NULL,1,'2026-05-19 07:01:26'),(31,'D005','Tomás','Cortés','Palacios',4,NULL,1,'2026-05-19 07:01:26'),(32,'D006','Ximena','Bravo','Escobar',4,NULL,1,'2026-05-19 07:01:26');
+/*!40000 ALTER TABLE `alumnos` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- ── Alumnos ───────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS alumnos (
-  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  matricula       VARCHAR(20)  NOT NULL UNIQUE,
-  nombre          VARCHAR(80)  NOT NULL,
-  apellido_pat    VARCHAR(60)  NOT NULL,
-  apellido_mat    VARCHAR(60),
-  grupo_id        INT UNSIGNED NOT NULL,
-  huella_id       TINYINT UNSIGNED,             -- ID en el sensor AS608 (1-127), NULL si no registrada
-  activo          TINYINT(1)   NOT NULL DEFAULT 1,
-  creado_en       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (grupo_id) REFERENCES grupos(id) ON DELETE RESTRICT
-);
+--
+-- Table structure for table `asistencias`
+--
 
--- ── Asistencias ───────────────────────────────────────────────
--- tipo: 'asistencia' | 'retardo' | 'falta' | 'permiso'
-CREATE TABLE IF NOT EXISTS asistencias (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  alumno_id     INT UNSIGNED NOT NULL,
-  horario_id    INT UNSIGNED NOT NULL,
-  fecha         DATE        NOT NULL,
-  hora_entrada  TIME,                           -- NULL si es falta/permiso
-  tipo          ENUM('asistencia','retardo','falta','permiso') NOT NULL,
-  nota          TEXT,                           -- Para permisos: motivo
-  registrado_por ENUM('sensor','manual') NOT NULL DEFAULT 'sensor',
-  creado_en     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (alumno_id)  REFERENCES alumnos(id)  ON DELETE CASCADE,
-  FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE CASCADE,
-  UNIQUE KEY uq_alumno_horario_fecha (alumno_id, horario_id, fecha)
-);
+DROP TABLE IF EXISTS `asistencias`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `asistencias` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `alumno_id` int unsigned NOT NULL,
+  `horario_id` int unsigned NOT NULL,
+  `fecha` date NOT NULL,
+  `hora_entrada` time DEFAULT NULL,
+  `tipo` enum('asistencia','retardo','falta','permiso') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nota` text COLLATE utf8mb4_unicode_ci,
+  `registrado_por` enum('sensor','manual') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sensor',
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_alumno_horario_fecha` (`alumno_id`,`horario_id`,`fecha`),
+  KEY `horario_id` (`horario_id`),
+  KEY `idx_asistencias_fecha` (`fecha`),
+  KEY `idx_asistencias_alumno` (`alumno_id`),
+  KEY `idx_asistencias_tipo` (`tipo`),
+  CONSTRAINT `asistencias_ibfk_1` FOREIGN KEY (`alumno_id`) REFERENCES `alumnos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `asistencias_ibfk_2` FOREIGN KEY (`horario_id`) REFERENCES `horarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=674 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE TABLE IF NOT EXISTS permisos (
-  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  alumno_id      INT UNSIGNED NOT NULL,
-  fecha_inicio   DATE NOT NULL,
-  fecha_fin      DATE NOT NULL,
-  motivo         VARCHAR(255) NOT NULL,
-  activo         TINYINT(1) NOT NULL DEFAULT 1,
-  creado_en      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE CASCADE
-);
+--
+-- Dumping data for table `asistencias`
+--
 
-CREATE TABLE IF NOT EXISTS permiso_horarios (
-  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  permiso_id   INT UNSIGNED NOT NULL,
-  horario_id   INT UNSIGNED NOT NULL,
-  FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE,
-  FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE CASCADE,
-  UNIQUE KEY uq_permiso_horario (permiso_id, horario_id)
-);
+LOCK TABLES `asistencias` WRITE;
+/*!40000 ALTER TABLE `asistencias` DISABLE KEYS */;
+INSERT INTO `asistencias` VALUES (1,1,1,'2026-04-20','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(2,1,2,'2026-04-20','08:05:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(3,1,3,'2026-04-21','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(4,1,4,'2026-04-21','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(5,1,5,'2026-04-22','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(6,1,6,'2026-04-22','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(7,1,7,'2026-04-23','07:04:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(8,1,8,'2026-04-23','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(9,1,9,'2026-04-24','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(10,1,10,'2026-04-24','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(11,1,1,'2026-04-27','07:15:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(12,1,2,'2026-04-27','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(13,1,3,'2026-04-28','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(14,1,4,'2026-04-28','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(15,1,5,'2026-04-29','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(16,1,6,'2026-04-29','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(17,1,7,'2026-04-30','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(18,1,8,'2026-04-30','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(19,1,9,'2026-05-04','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(20,1,10,'2026-05-04','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(21,1,1,'2026-05-05','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(22,1,2,'2026-05-05','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(23,1,3,'2026-05-06','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(24,1,4,'2026-05-06','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(25,1,5,'2026-05-07','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(26,1,6,'2026-05-07','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(27,1,7,'2026-05-08','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(28,1,8,'2026-05-08','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(29,1,9,'2026-05-11','07:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(30,1,10,'2026-05-11','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(31,1,1,'2026-05-12','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(32,1,2,'2026-05-12','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(33,1,3,'2026-05-13','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(34,1,4,'2026-05-13','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(35,1,5,'2026-05-14','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(36,1,6,'2026-05-14','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(37,1,7,'2026-05-15','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(38,1,8,'2026-05-15','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(39,2,1,'2026-04-20','07:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(40,2,2,'2026-04-20','08:22:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(41,2,3,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(42,2,4,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(43,2,5,'2026-04-22','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(44,2,6,'2026-04-22','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(45,2,7,'2026-04-23','07:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(46,2,8,'2026-04-23','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(47,2,9,'2026-04-24',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(48,2,10,'2026-04-24',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(49,2,1,'2026-04-27','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(50,2,2,'2026-04-27','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(51,2,3,'2026-04-28','07:25:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(52,2,4,'2026-04-28','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(53,2,5,'2026-04-29',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(54,2,6,'2026-04-29',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(55,2,7,'2026-04-30','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(56,2,8,'2026-04-30','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(57,2,9,'2026-05-04','07:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(58,2,10,'2026-05-04','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(59,2,1,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(60,2,2,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(61,2,3,'2026-05-06','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(62,2,4,'2026-05-06','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(63,2,5,'2026-05-07','07:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(64,2,6,'2026-05-07','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(65,2,7,'2026-05-08',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(66,2,8,'2026-05-08',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(67,2,9,'2026-05-11','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(68,2,10,'2026-05-11','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(69,2,1,'2026-05-12','07:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(70,2,2,'2026-05-12','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(71,2,3,'2026-05-13',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(72,2,4,'2026-05-13',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(73,2,5,'2026-05-14','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(74,2,6,'2026-05-14','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(75,2,7,'2026-05-15','07:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(76,2,8,'2026-05-15','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(77,3,1,'2026-04-20','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(78,3,2,'2026-04-20','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(79,3,3,'2026-04-21','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(80,3,4,'2026-04-21','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(81,3,5,'2026-04-22','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(82,3,6,'2026-04-22','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(83,3,7,'2026-04-23','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(84,3,8,'2026-04-23','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(85,3,9,'2026-04-24','07:14:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(86,3,10,'2026-04-24','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(87,3,1,'2026-04-27','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(88,3,2,'2026-04-27','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(89,3,3,'2026-04-28','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(90,3,4,'2026-04-28','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(91,3,5,'2026-04-29','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(92,3,6,'2026-04-29','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(93,3,7,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(94,3,8,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(95,3,9,'2026-05-04','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(96,3,10,'2026-05-04','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(97,3,1,'2026-05-05','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(98,3,2,'2026-05-05','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(99,3,3,'2026-05-06','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(100,3,4,'2026-05-06','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(101,3,5,'2026-05-07','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(102,3,6,'2026-05-07','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(103,3,7,'2026-05-08','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(104,3,8,'2026-05-08','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(105,3,9,'2026-05-11','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(106,3,10,'2026-05-11','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(107,3,1,'2026-05-12','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(108,3,2,'2026-05-12','08:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(109,3,3,'2026-05-13','07:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(110,3,4,'2026-05-13','08:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(111,3,5,'2026-05-14','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(112,3,6,'2026-05-14','08:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(113,3,7,'2026-05-15','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(114,3,8,'2026-05-15','08:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(115,4,1,'2026-04-20','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(116,4,3,'2026-04-21','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(117,4,5,'2026-04-22','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(118,4,7,'2026-04-23','07:03:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(119,4,9,'2026-04-24','07:15:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(120,4,1,'2026-04-27','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(121,4,3,'2026-04-28','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(122,4,5,'2026-04-29','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(123,4,7,'2026-04-30','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(124,4,9,'2026-05-04','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(125,4,1,'2026-05-05','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(126,4,3,'2026-05-06','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(127,4,5,'2026-05-07','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(128,4,7,'2026-05-08','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(129,4,9,'2026-05-11','07:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(130,4,1,'2026-05-12','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(131,4,3,'2026-05-13','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(132,4,5,'2026-05-14','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(133,4,7,'2026-05-15','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(134,5,1,'2026-04-20',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(135,5,3,'2026-04-21','07:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(136,5,5,'2026-04-22',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(137,5,7,'2026-04-23','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(138,5,9,'2026-04-24','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(139,5,1,'2026-04-27','07:22:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(140,5,3,'2026-04-28',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(141,5,5,'2026-04-29','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(142,5,7,'2026-04-30','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(143,5,9,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(144,5,1,'2026-05-05','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(145,5,3,'2026-05-06','07:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(146,5,5,'2026-05-07',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(147,5,7,'2026-05-08','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(148,5,9,'2026-05-11','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(149,5,1,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(150,5,3,'2026-05-13','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(151,5,5,'2026-05-14','07:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(152,5,7,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(153,6,1,'2026-04-20','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(154,6,3,'2026-04-21','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(155,6,5,'2026-04-22','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(156,6,7,'2026-04-23','07:14:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(157,6,9,'2026-04-24','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(158,6,1,'2026-04-27','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(159,6,3,'2026-04-28','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(160,6,5,'2026-04-29',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(161,6,7,'2026-04-30','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(162,6,9,'2026-05-04','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(163,6,1,'2026-05-05','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(164,6,3,'2026-05-06','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(165,6,5,'2026-05-07','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(166,6,7,'2026-05-08','07:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(167,6,9,'2026-05-11','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(168,6,1,'2026-05-12','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(169,6,3,'2026-05-13',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(170,6,5,'2026-05-14','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(171,6,7,'2026-05-15','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(172,7,1,'2026-04-20','07:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(173,7,3,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(174,7,5,'2026-04-22','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(175,7,7,'2026-04-23','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(176,7,9,'2026-04-24','07:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(177,7,1,'2026-04-27',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(178,7,3,'2026-04-28','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(179,7,5,'2026-04-29','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(180,7,7,'2026-04-30','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(181,7,9,'2026-05-04','07:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(182,7,1,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(183,7,3,'2026-05-06','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(184,7,5,'2026-05-07','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(185,7,7,'2026-05-08','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(186,7,9,'2026-05-11','07:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(187,7,1,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(188,7,3,'2026-05-13','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(189,7,5,'2026-05-14','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(190,7,7,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(191,8,1,'2026-04-20','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(192,8,3,'2026-04-21','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(193,8,5,'2026-04-22','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(194,8,7,'2026-04-23','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(195,8,9,'2026-04-24','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(196,8,1,'2026-04-27','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(197,8,3,'2026-04-28','07:15:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(198,8,5,'2026-04-29','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(199,8,7,'2026-04-30','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(200,8,9,'2026-05-04','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(201,8,1,'2026-05-05','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(202,8,3,'2026-05-06','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(203,8,5,'2026-05-07','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(204,8,7,'2026-05-08','07:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(205,8,9,'2026-05-11','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(206,8,1,'2026-05-12','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(207,8,3,'2026-05-13','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(208,8,5,'2026-05-14','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(209,8,7,'2026-05-15','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(210,9,1,'2026-04-20',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(211,9,3,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(212,9,5,'2026-04-22','07:22:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(213,9,7,'2026-04-23',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(214,9,9,'2026-04-24',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(215,9,1,'2026-04-27','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(216,9,3,'2026-04-28',NULL,'permiso','Trámite familiar','manual','2026-05-19 07:01:26'),(217,9,5,'2026-04-29',NULL,'permiso','Trámite familiar','manual','2026-05-19 07:01:26'),(218,9,7,'2026-04-30','07:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(219,9,9,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(220,9,1,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(221,9,3,'2026-05-06','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(222,9,5,'2026-05-07',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(223,9,7,'2026-05-08',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(224,9,9,'2026-05-11','07:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(225,9,1,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(226,9,3,'2026-05-13',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(227,9,5,'2026-05-14','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(228,9,7,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(229,10,1,'2026-04-20','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(230,10,3,'2026-04-21','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(231,10,5,'2026-04-22','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(232,10,7,'2026-04-23','07:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(233,10,9,'2026-04-24','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(234,10,1,'2026-04-27','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(235,10,3,'2026-04-28','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(236,10,5,'2026-04-29','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(237,10,7,'2026-04-30','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(238,10,9,'2026-05-04','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(239,10,1,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(240,10,3,'2026-05-06','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(241,10,5,'2026-05-07','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(242,10,7,'2026-05-08','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(243,10,9,'2026-05-11','07:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(244,10,1,'2026-05-12','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(245,10,3,'2026-05-13','07:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(246,10,5,'2026-05-14','07:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(247,10,7,'2026-05-15','07:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(248,11,11,'2026-04-20','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(249,11,13,'2026-04-21','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(250,11,15,'2026-04-22','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(251,11,16,'2026-04-23','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(252,11,17,'2026-04-24','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(253,11,11,'2026-04-27','09:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(254,11,13,'2026-04-28','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(255,11,15,'2026-04-29','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(256,11,16,'2026-04-30','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(257,11,17,'2026-05-04','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(258,11,11,'2026-05-05','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(259,11,13,'2026-05-06','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(260,11,15,'2026-05-07','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(261,11,16,'2026-05-08','09:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(262,11,17,'2026-05-11','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(263,11,11,'2026-05-12','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(264,11,13,'2026-05-13','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(265,11,15,'2026-05-14','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(266,11,16,'2026-05-15','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(267,12,11,'2026-04-20',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(268,12,13,'2026-04-21','09:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(269,12,15,'2026-04-22','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(270,12,16,'2026-04-23',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(271,12,17,'2026-04-24','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(272,12,11,'2026-04-27','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(273,12,13,'2026-04-28',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(274,12,15,'2026-04-29','09:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(275,12,16,'2026-04-30','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(276,12,17,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(277,12,11,'2026-05-05','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(278,12,13,'2026-05-06','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(279,12,15,'2026-05-07',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(280,12,16,'2026-05-08','09:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(281,12,17,'2026-05-11','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(282,12,11,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(283,12,13,'2026-05-13','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(284,12,15,'2026-05-14','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(285,12,16,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(286,13,11,'2026-04-20','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(287,13,13,'2026-04-21','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(288,13,15,'2026-04-22','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(289,13,16,'2026-04-23','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(290,13,17,'2026-04-24','09:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(291,13,11,'2026-04-27','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(292,13,13,'2026-04-28','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(293,13,15,'2026-04-29','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(294,13,16,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(295,13,17,'2026-05-04','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(296,13,11,'2026-05-05','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(297,13,13,'2026-05-06','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(298,13,15,'2026-05-07','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(299,13,16,'2026-05-08','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(300,13,17,'2026-05-11','09:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(301,13,11,'2026-05-12','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(302,13,13,'2026-05-13','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(303,13,15,'2026-05-14','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(304,13,16,'2026-05-15','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(305,14,11,'2026-04-20','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(306,14,13,'2026-04-21','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(307,14,15,'2026-04-22','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(308,14,16,'2026-04-23','09:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(309,14,17,'2026-04-24','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(310,14,11,'2026-04-27','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(311,14,13,'2026-04-28','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(312,14,15,'2026-04-29','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(313,14,16,'2026-04-30','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(314,14,17,'2026-05-04','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(315,14,11,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(316,14,13,'2026-05-06','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(317,14,15,'2026-05-07','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(318,14,16,'2026-05-08','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(319,14,17,'2026-05-11','09:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(320,14,11,'2026-05-12','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(321,14,13,'2026-05-13','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(322,14,15,'2026-05-14','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(323,14,16,'2026-05-15','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(324,15,11,'2026-04-20','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(325,15,13,'2026-04-21','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(326,15,15,'2026-04-22','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(327,15,16,'2026-04-23','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(328,15,17,'2026-04-24','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(329,15,11,'2026-04-27','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(330,15,13,'2026-04-28','09:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(331,15,15,'2026-04-29','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(332,15,16,'2026-04-30','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(333,15,17,'2026-05-04','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(334,15,11,'2026-05-05','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(335,15,13,'2026-05-06','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(336,15,15,'2026-05-07','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(337,15,16,'2026-05-08','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(338,15,17,'2026-05-11','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(339,15,11,'2026-05-12','09:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(340,15,13,'2026-05-13','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(341,15,15,'2026-05-14','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(342,15,16,'2026-05-15','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(343,16,11,'2026-04-20','09:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(344,16,13,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(345,16,15,'2026-04-22','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(346,16,16,'2026-04-23','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(347,16,17,'2026-04-24','09:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(348,16,11,'2026-04-27',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(349,16,13,'2026-04-28','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(350,16,15,'2026-04-29','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(351,16,16,'2026-04-30','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(352,16,17,'2026-05-04','09:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(353,16,11,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(354,16,13,'2026-05-06','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(355,16,15,'2026-05-07','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(356,16,16,'2026-05-08','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(357,16,17,'2026-05-11','09:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(358,16,11,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(359,16,13,'2026-05-13','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(360,16,15,'2026-05-14','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(361,16,16,'2026-05-15','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(362,17,11,'2026-04-20','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(363,17,13,'2026-04-21','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(364,17,15,'2026-04-22','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(365,17,16,'2026-04-23','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(366,17,17,'2026-04-24','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(367,17,11,'2026-04-27','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(368,17,13,'2026-04-28','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(369,17,15,'2026-04-29','09:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(370,17,16,'2026-04-30','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(371,17,17,'2026-05-04','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(372,17,11,'2026-05-05','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(373,17,13,'2026-05-06','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(374,17,15,'2026-05-07','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(375,17,16,'2026-05-08','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(376,17,17,'2026-05-11','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(377,17,11,'2026-05-12','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(378,17,13,'2026-05-13','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(379,17,15,'2026-05-14','09:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(380,17,16,'2026-05-15','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(381,18,11,'2026-04-20','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(382,18,13,'2026-04-21','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(383,18,15,'2026-04-22','09:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(384,18,16,'2026-04-23','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(385,18,17,'2026-04-24','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(386,18,11,'2026-04-27','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(387,18,13,'2026-04-28','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(388,18,15,'2026-04-29','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(389,18,16,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(390,18,17,'2026-05-04','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(391,18,11,'2026-05-05','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(392,18,13,'2026-05-06','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(393,18,15,'2026-05-07','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(394,18,16,'2026-05-08','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(395,18,17,'2026-05-11','09:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(396,18,11,'2026-05-12','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(397,18,13,'2026-05-13','09:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(398,18,15,'2026-05-14','09:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(399,18,16,'2026-05-15','09:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(400,19,18,'2026-04-20','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(401,19,19,'2026-04-21','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(402,19,20,'2026-04-22','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(403,19,21,'2026-04-23','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(404,19,22,'2026-04-24','11:15:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(405,19,18,'2026-04-27','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(406,19,19,'2026-04-28','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(407,19,20,'2026-04-29','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(408,19,21,'2026-04-30','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(409,19,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(410,19,18,'2026-05-05','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(411,19,19,'2026-05-06','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(412,19,20,'2026-05-07','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(413,19,21,'2026-05-08','11:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(414,19,22,'2026-05-11','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(415,19,18,'2026-05-12','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(416,19,19,'2026-05-13','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(417,19,20,'2026-05-14','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(418,19,21,'2026-05-15','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(419,20,18,'2026-04-20','11:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(420,20,19,'2026-04-21',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(421,20,20,'2026-04-22','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(422,20,21,'2026-04-23',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(423,20,22,'2026-04-24','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(424,20,18,'2026-04-27','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(425,20,19,'2026-04-28','11:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(426,20,20,'2026-04-29',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(427,20,21,'2026-04-30','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(428,20,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(429,20,18,'2026-05-05',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(430,20,19,'2026-05-06','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(431,20,20,'2026-05-07','11:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(432,20,21,'2026-05-08',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(433,20,22,'2026-05-11','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(434,20,18,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(435,20,19,'2026-05-13','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(436,20,20,'2026-05-14','11:21:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(437,20,21,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(438,21,18,'2026-04-20','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(439,21,19,'2026-04-21','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(440,21,20,'2026-04-22','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(441,21,21,'2026-04-23','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(442,21,22,'2026-04-24','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(443,21,18,'2026-04-27','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(444,21,19,'2026-04-28','11:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(445,21,20,'2026-04-29','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(446,21,21,'2026-04-30','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(447,21,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(448,21,18,'2026-05-05','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(449,21,19,'2026-05-06','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(450,21,20,'2026-05-07','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(451,21,21,'2026-05-08','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(452,21,22,'2026-05-11','11:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(453,21,18,'2026-05-12','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(454,21,19,'2026-05-13','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(455,21,20,'2026-05-14','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(456,21,21,'2026-05-15','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(457,22,18,'2026-04-20','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(458,22,19,'2026-04-21','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(459,22,20,'2026-04-22','11:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(460,22,21,'2026-04-23','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(461,22,22,'2026-04-24','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(462,22,18,'2026-04-27',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(463,22,19,'2026-04-28','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(464,22,20,'2026-04-29','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(465,22,21,'2026-04-30','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(466,22,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(467,22,18,'2026-05-05','11:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(468,22,19,'2026-05-06','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(469,22,20,'2026-05-07','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(470,22,21,'2026-05-08','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(471,22,22,'2026-05-11','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(472,22,18,'2026-05-12','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(473,22,19,'2026-05-13',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(474,22,20,'2026-05-14','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(475,22,21,'2026-05-15','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(476,23,18,'2026-04-20','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(477,23,19,'2026-04-21','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(478,23,20,'2026-04-22','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(479,23,21,'2026-04-23','11:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(480,23,22,'2026-04-24','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(481,23,18,'2026-04-27','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(482,23,19,'2026-04-28','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(483,23,20,'2026-04-29','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(484,23,21,'2026-04-30','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(485,23,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(486,23,18,'2026-05-05','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(487,23,19,'2026-05-06','11:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(488,23,20,'2026-05-07','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(489,23,21,'2026-05-08','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(490,23,22,'2026-05-11','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(491,23,18,'2026-05-12','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(492,23,19,'2026-05-13','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(493,23,20,'2026-05-14','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(494,23,21,'2026-05-15','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(495,24,18,'2026-04-20',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(496,24,19,'2026-04-21','11:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(497,24,20,'2026-04-22','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(498,24,21,'2026-04-23',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(499,24,22,'2026-04-24','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(500,24,18,'2026-04-27','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(501,24,19,'2026-04-28',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(502,24,20,'2026-04-29','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(503,24,21,'2026-04-30','11:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(504,24,22,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(505,24,18,'2026-05-05','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(506,24,19,'2026-05-06','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(507,24,20,'2026-05-07',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(508,24,21,'2026-05-08','11:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(509,24,22,'2026-05-11','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(510,24,18,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(511,24,19,'2026-05-13','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(512,24,20,'2026-05-14','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(513,24,21,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(514,25,18,'2026-04-20','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(515,25,19,'2026-04-21','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(516,25,20,'2026-04-22','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(517,25,21,'2026-04-23','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(518,25,22,'2026-04-24','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(519,25,18,'2026-04-27','11:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(520,25,19,'2026-04-28','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(521,25,20,'2026-04-29','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(522,25,21,'2026-04-30','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(523,25,22,'2026-05-04','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(524,25,18,'2026-05-05','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(525,25,19,'2026-05-06','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(526,25,20,'2026-05-07','11:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(527,25,21,'2026-05-08','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(528,25,22,'2026-05-11','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(529,25,18,'2026-05-12','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(530,25,19,'2026-05-13','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(531,25,20,'2026-05-14','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(532,25,21,'2026-05-15','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(533,26,18,'2026-04-20','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(534,26,19,'2026-04-21','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(535,26,20,'2026-04-22','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(536,26,21,'2026-04-23','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(537,26,22,'2026-04-24','11:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(538,26,18,'2026-04-27','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(539,26,19,'2026-04-28','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(540,26,20,'2026-04-29','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(541,26,21,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(542,26,22,'2026-05-04','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(543,26,18,'2026-05-05','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(544,26,19,'2026-05-06','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(545,26,20,'2026-05-07','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(546,26,21,'2026-05-08','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(547,26,22,'2026-05-11','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(548,26,18,'2026-05-12','11:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(549,26,19,'2026-05-13','11:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(550,26,20,'2026-05-14','11:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(551,26,21,'2026-05-15','11:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(552,27,23,'2026-04-20','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(553,27,24,'2026-04-21','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(554,27,25,'2026-04-22','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(555,27,26,'2026-04-23','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(556,27,27,'2026-04-24','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(557,27,23,'2026-04-27','12:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(558,27,24,'2026-04-28','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(559,27,25,'2026-04-29','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(560,27,26,'2026-04-30','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(561,27,27,'2026-05-04','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(562,27,23,'2026-05-05','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(563,27,24,'2026-05-06','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(564,27,25,'2026-05-07','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(565,27,26,'2026-05-08','12:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(566,27,27,'2026-05-11','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(567,27,23,'2026-05-12','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(568,27,24,'2026-05-13','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(569,27,25,'2026-05-14','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(570,27,26,'2026-05-15','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(571,28,23,'2026-04-20',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(572,28,24,'2026-04-21','12:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(573,28,25,'2026-04-22','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(574,28,26,'2026-04-23',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(575,28,27,'2026-04-24','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(576,28,23,'2026-04-27','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(577,28,24,'2026-04-28',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(578,28,25,'2026-04-29','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(579,28,26,'2026-04-30','12:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(580,28,27,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(581,28,23,'2026-05-05','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(582,28,24,'2026-05-06','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(583,28,25,'2026-05-07',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(584,28,26,'2026-05-08','12:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(585,28,27,'2026-05-11','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(586,28,23,'2026-05-12',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(587,28,24,'2026-05-13','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(588,28,25,'2026-05-14','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(589,28,26,'2026-05-15',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(590,29,23,'2026-04-20','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(591,29,24,'2026-04-21','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(592,29,25,'2026-04-22','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(593,29,26,'2026-04-23','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(594,29,27,'2026-04-24','12:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(595,29,23,'2026-04-27','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(596,29,24,'2026-04-28','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(597,29,25,'2026-04-29','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(598,29,26,'2026-04-30','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(599,29,27,'2026-05-04','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(600,29,23,'2026-05-05','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(601,29,24,'2026-05-06','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(602,29,25,'2026-05-07','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(603,29,26,'2026-05-08','12:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(604,29,27,'2026-05-11','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(605,29,23,'2026-05-12','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(606,29,24,'2026-05-13','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(607,29,25,'2026-05-14','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(608,29,26,'2026-05-15','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(609,30,23,'2026-04-20','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(610,30,24,'2026-04-21','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(611,30,25,'2026-04-22','12:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(612,30,26,'2026-04-23','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(613,30,27,'2026-04-24','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(614,30,23,'2026-04-27','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(615,30,24,'2026-04-28','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(616,30,25,'2026-04-29','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(617,30,26,'2026-04-30',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(618,30,27,'2026-05-04','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(619,30,23,'2026-05-05','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(620,30,24,'2026-05-06','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(621,30,25,'2026-05-07','12:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(622,30,26,'2026-05-08','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(623,30,27,'2026-05-11','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(624,30,23,'2026-05-12','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(625,30,24,'2026-05-13','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(626,30,25,'2026-05-14','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(627,30,26,'2026-05-15','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(628,31,23,'2026-04-20','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(629,31,24,'2026-04-21','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(630,31,25,'2026-04-22','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(631,31,26,'2026-04-23','12:18:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(632,31,27,'2026-04-24','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(633,31,23,'2026-04-27','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(634,31,24,'2026-04-28','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(635,31,25,'2026-04-29','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(636,31,26,'2026-04-30','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(637,31,27,'2026-05-04','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(638,31,23,'2026-05-05','12:16:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(639,31,24,'2026-05-06','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(640,31,25,'2026-05-07','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(641,31,26,'2026-05-08','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(642,31,27,'2026-05-11','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(643,31,23,'2026-05-12','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(644,31,24,'2026-05-13','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(645,31,25,'2026-05-14','12:19:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(646,31,26,'2026-05-15','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(647,32,23,'2026-04-20','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(648,32,24,'2026-04-21','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(649,32,25,'2026-04-22','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(650,32,26,'2026-04-23','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(651,32,27,'2026-04-24','12:20:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(652,32,23,'2026-04-27','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(653,32,24,'2026-04-28','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(654,32,25,'2026-04-29','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(655,32,26,'2026-04-30','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(656,32,27,'2026-05-04',NULL,'falta',NULL,'manual','2026-05-19 07:01:26'),(657,32,23,'2026-05-05','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(658,32,24,'2026-05-06','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(659,32,25,'2026-05-07','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(660,32,26,'2026-05-08','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(661,32,27,'2026-05-11','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(662,32,23,'2026-05-12','12:17:00','retardo',NULL,'sensor','2026-05-19 07:01:26'),(663,32,24,'2026-05-13','12:02:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(664,32,25,'2026-05-14','12:01:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(665,32,26,'2026-05-15','12:00:00','asistencia',NULL,'sensor','2026-05-19 07:01:26'),(666,5,3,'2026-05-05',NULL,'permiso','Cita médica','manual','2026-05-19 15:14:34'),(667,5,5,'2026-05-06',NULL,'permiso','Cita médica','manual','2026-05-19 15:14:34'),(668,20,19,'2026-05-12',NULL,'permiso','Competencia deportiva','manual','2026-05-19 15:16:58'),(669,20,20,'2026-05-13',NULL,'permiso','Competencia deportiva','manual','2026-05-19 15:16:58'),(671,9,4,'2026-04-28',NULL,'permiso','Trámite familiar','manual','2026-05-19 15:18:54'),(673,9,6,'2026-04-29',NULL,'permiso','Trámite familiar','manual','2026-05-19 15:18:54');
+/*!40000 ALTER TABLE `asistencias` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- ── Índices para consultas frecuentes ─────────────────────────
-CREATE INDEX idx_asistencias_fecha    ON asistencias(fecha);
-CREATE INDEX idx_asistencias_alumno   ON asistencias(alumno_id);
-CREATE INDEX idx_asistencias_tipo     ON asistencias(tipo);
-CREATE INDEX idx_alumnos_huella       ON alumnos(huella_id);
-CREATE INDEX idx_horarios_dia         ON horarios(dia_semana);
-CREATE INDEX idx_permisos_alumno ON permisos(alumno_id);
-CREATE INDEX idx_permisos_fechas ON permisos(fecha_inicio, fecha_fin);
+--
+-- Table structure for table `grupos`
+--
 
--- ================================================================
--- SIGA — Datos de prueba realistas (Turno Matutino)
--- Horarios: 07:00 a 13:00
--- Ejecutar después de schema.sql
--- ================================================================
- 
-USE siga_db;
- 
--- ── Grupos ────────────────────────────────────────────────────
-INSERT INTO grupos (nombre, descripcion) VALUES
-  ('1°A', 'Primer semestre grupo A'),
-  ('1°B', 'Primer semestre grupo B'),
-  ('2°A', 'Segundo semestre grupo A'),
-  ('3°A', 'Tercer semestre grupo A');
- 
--- ── Materias ──────────────────────────────────────────────────
-INSERT INTO materias (nombre, clave) VALUES
-  ('Matemáticas',      'MAT-01'),
-  ('Español',          'ESP-01'),
-  ('Ciencias',         'CIE-01'),
-  ('Historia',         'HIS-01'),
-  ('Inglés',           'ING-01'),
-  ('Educación Física', 'EDF-01'),
-  ('Informática',      'INF-01'),
-  ('Química',          'QUI-01');
- 
--- ── Horarios — todos entre 07:00 y 13:00 ─────────────────────
--- día: 1=Lun 2=Mar 3=Mié 4=Jue 5=Vie
-INSERT INTO horarios (grupo_id, materia_id, dia_semana, hora_inicio, hora_fin, tolerancia_min) VALUES
-  -- 1°A (horarios id 1-10)
-  (1, 1, 1, '07:00:00', '08:00:00', 10),  -- Lun Matemáticas
-  (1, 2, 1, '08:00:00', '09:00:00', 10),  -- Lun Español
-  (1, 3, 2, '07:00:00', '08:00:00', 10),  -- Mar Ciencias
-  (1, 4, 2, '08:00:00', '09:00:00', 10),  -- Mar Historia
-  (1, 5, 3, '07:00:00', '08:00:00', 10),  -- Mié Inglés
-  (1, 6, 3, '08:00:00', '09:00:00', 10),  -- Mié Ed. Física
-  (1, 7, 4, '07:00:00', '08:00:00', 10),  -- Jue Informática
-  (1, 1, 4, '08:00:00', '09:00:00', 10),  -- Jue Matemáticas
-  (1, 2, 5, '07:00:00', '08:00:00', 10),  -- Vie Español
-  (1, 8, 5, '08:00:00', '09:00:00', 10),  -- Vie Química
-  -- 1°B (horarios id 11-17)
-  (2, 1, 1, '09:00:00', '10:00:00', 10),  -- Lun Matemáticas
-  (2, 2, 1, '10:00:00', '11:00:00', 10),  -- Lun Español
-  (2, 3, 2, '09:00:00', '10:00:00', 10),  -- Mar Ciencias
-  (2, 4, 2, '10:00:00', '11:00:00', 10),  -- Mar Historia
-  (2, 5, 3, '09:00:00', '10:00:00', 10),  -- Mié Inglés
-  (2, 7, 4, '09:00:00', '10:00:00', 10),  -- Jue Informática
-  (2, 8, 5, '09:00:00', '10:00:00', 10),  -- Vie Química
-  -- 2°A (horarios id 18-22)
-  (3, 1, 1, '11:00:00', '12:00:00', 10),  -- Lun Matemáticas
-  (3, 5, 2, '11:00:00', '12:00:00', 10),  -- Mar Inglés
-  (3, 7, 3, '11:00:00', '12:00:00', 10),  -- Mié Informática
-  (3, 8, 4, '11:00:00', '12:00:00', 10),  -- Jue Química
-  (3, 4, 5, '11:00:00', '12:00:00', 10),  -- Vie Historia
-  -- 3°A (horarios id 23-27)
-  (4, 1, 1, '12:00:00', '13:00:00', 10),  -- Lun Matemáticas
-  (4, 5, 2, '12:00:00', '13:00:00', 10),  -- Mar Inglés
-  (4, 8, 3, '12:00:00', '13:00:00', 10),  -- Mié Química
-  (4, 7, 4, '12:00:00', '13:00:00', 10),  -- Jue Informática
-  (4, 2, 5, '12:00:00', '13:00:00', 10);  -- Vie Español
- 
--- ── Alumnos 1°A (10 alumnos) ──────────────────────────────────
-INSERT INTO alumnos (matricula, nombre, apellido_pat, apellido_mat, grupo_id) VALUES
-  ('A001', 'Carlos',   'Ramírez',   'López',     1),
-  ('A002', 'María',    'Hernández', 'Martínez',  1),
-  ('A003', 'José',     'González',  'Pérez',     1),
-  ('A004', 'Ana',      'Torres',    'Sánchez',   1),
-  ('A005', 'Luis',     'Flores',    'García',    1),
-  ('A006', 'Sofía',    'Morales',   'Jiménez',   1),
-  ('A007', 'Diego',    'Reyes',     'Vargas',    1),
-  ('A008', 'Valeria',  'Cruz',      'Mendoza',   1),
-  ('A009', 'Miguel',   'Ramos',     'Ortiz',     1),
-  ('A010', 'Fernanda', 'Díaz',      'Castillo',  1);
- 
--- ── Alumnos 1°B (8 alumnos) ───────────────────────────────────
-INSERT INTO alumnos (matricula, nombre, apellido_pat, apellido_mat, grupo_id) VALUES
-  ('B001', 'Jorge',     'Mendoza',   'Ríos',      2),
-  ('B002', 'Daniela',   'Vega',      'Luna',      2),
-  ('B003', 'Andrés',    'Salinas',   'Mora',      2),
-  ('B004', 'Camila',    'Gutiérrez', 'Espinoza',  2),
-  ('B005', 'Ricardo',   'Jiménez',   'Fuentes',   2),
-  ('B006', 'Paola',     'Rojas',     'Delgado',   2),
-  ('B007', 'Sebastián', 'Núñez',     'Medina',    2),
-  ('B008', 'Valentina', 'Aguilar',   'Cervantes', 2);
- 
--- ── Alumnos 2°A (8 alumnos) ───────────────────────────────────
-INSERT INTO alumnos (matricula, nombre, apellido_pat, apellido_mat, grupo_id) VALUES
-  ('C001', 'Eduardo',  'Paredes',   'Villanueva', 3),
-  ('C002', 'Gabriela', 'Espinosa',  'Campos',     3),
-  ('C003', 'Héctor',   'Guerrero',  'Ibáñez',     3),
-  ('C004', 'Isabella', 'Peña',      'Contreras',  3),
-  ('C005', 'Kevin',    'Soto',      'Herrera',    3),
-  ('C006', 'Laura',    'Miranda',   'Cabrera',    3),
-  ('C007', 'Martín',   'Castillo',  'Navarro',    3),
-  ('C008', 'Natalia',  'Ávila',     'Domínguez',  3);
- 
--- ── Alumnos 3°A (6 alumnos) ───────────────────────────────────
-INSERT INTO alumnos (matricula, nombre, apellido_pat, apellido_mat, grupo_id) VALUES
-  ('D001', 'Omar',     'Serrano',  'Fuentes',  4),
-  ('D002', 'Patricia', 'Lara',     'Sandoval', 4),
-  ('D003', 'Rodrigo',  'Montes',   'Acosta',   4),
-  ('D004', 'Sara',     'Valencia', 'Mejía',    4),
-  ('D005', 'Tomás',    'Cortés',   'Palacios', 4),
-  ('D006', 'Ximena',   'Bravo',    'Escobar',  4);
- 
--- ================================================================
--- ASISTENCIAS — 20 días hábiles (2026-04-20 al 2026-05-15)
--- ================================================================
- 
--- ── 1°A — Alumno A001 (excelente, 2 retardos) ─────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (1,1,'2026-04-20','07:02:00','asistencia','sensor'),
-  (1,2,'2026-04-20','08:05:00','asistencia','sensor'),
-  (1,3,'2026-04-21','07:01:00','asistencia','sensor'),
-  (1,4,'2026-04-21','08:03:00','asistencia','sensor'),
-  (1,5,'2026-04-22','07:00:00','asistencia','sensor'),
-  (1,6,'2026-04-22','08:02:00','asistencia','sensor'),
-  (1,7,'2026-04-23','07:04:00','asistencia','sensor'),
-  (1,8,'2026-04-23','08:01:00','asistencia','sensor'),
-  (1,9,'2026-04-24','07:03:00','asistencia','sensor'),
-  (1,10,'2026-04-24','08:00:00','asistencia','sensor'),
-  (1,1,'2026-04-27','07:15:00','retardo','sensor'),
-  (1,2,'2026-04-27','08:02:00','asistencia','sensor'),
-  (1,3,'2026-04-28','07:01:00','asistencia','sensor'),
-  (1,4,'2026-04-28','08:00:00','asistencia','sensor'),
-  (1,5,'2026-04-29','07:02:00','asistencia','sensor'),
-  (1,6,'2026-04-29','08:03:00','asistencia','sensor'),
-  (1,7,'2026-04-30','07:00:00','asistencia','sensor'),
-  (1,8,'2026-04-30','08:01:00','asistencia','sensor'),
-  (1,9,'2026-05-04','07:02:00','asistencia','sensor'),
-  (1,10,'2026-05-04','08:00:00','asistencia','sensor'),
-  (1,1,'2026-05-05','07:01:00','asistencia','sensor'),
-  (1,2,'2026-05-05','08:00:00','asistencia','sensor'),
-  (1,3,'2026-05-06','07:03:00','asistencia','sensor'),
-  (1,4,'2026-05-06','08:02:00','asistencia','sensor'),
-  (1,5,'2026-05-07','07:00:00','asistencia','sensor'),
-  (1,6,'2026-05-07','08:01:00','asistencia','sensor'),
-  (1,7,'2026-05-08','07:02:00','asistencia','sensor'),
-  (1,8,'2026-05-08','08:00:00','asistencia','sensor'),
-  (1,9,'2026-05-11','07:20:00','retardo','sensor'),
-  (1,10,'2026-05-11','08:02:00','asistencia','sensor'),
-  (1,1,'2026-05-12','07:01:00','asistencia','sensor'),
-  (1,2,'2026-05-12','08:00:00','asistencia','sensor'),
-  (1,3,'2026-05-13','07:02:00','asistencia','sensor'),
-  (1,4,'2026-05-13','08:01:00','asistencia','sensor'),
-  (1,5,'2026-05-14','07:00:00','asistencia','sensor'),
-  (1,6,'2026-05-14','08:02:00','asistencia','sensor'),
-  (1,7,'2026-05-15','07:03:00','asistencia','sensor'),
-  (1,8,'2026-05-15','08:00:00','asistencia','sensor');
- 
--- ── A002 (irregular — muchas faltas y retardos) ───────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (2,1,'2026-04-20','07:18:00','retardo','sensor'),
-  (2,2,'2026-04-20','08:22:00','retardo','sensor'),
-  (2,3,'2026-04-21',NULL,'falta','manual'),
-  (2,4,'2026-04-21',NULL,'falta','manual'),
-  (2,5,'2026-04-22','07:01:00','asistencia','sensor'),
-  (2,6,'2026-04-22','08:00:00','asistencia','sensor'),
-  (2,7,'2026-04-23','07:19:00','retardo','sensor'),
-  (2,8,'2026-04-23','08:02:00','asistencia','sensor'),
-  (2,9,'2026-04-24',NULL,'falta','manual'),
-  (2,10,'2026-04-24',NULL,'falta','manual'),
-  (2,1,'2026-04-27','07:02:00','asistencia','sensor'),
-  (2,2,'2026-04-27','08:01:00','asistencia','sensor'),
-  (2,3,'2026-04-28','07:25:00','retardo','sensor'),
-  (2,4,'2026-04-28','08:03:00','asistencia','sensor'),
-  (2,5,'2026-04-29',NULL,'falta','manual'),
-  (2,6,'2026-04-29',NULL,'falta','manual'),
-  (2,7,'2026-04-30','07:00:00','asistencia','sensor'),
-  (2,8,'2026-04-30','08:02:00','asistencia','sensor'),
-  (2,9,'2026-05-04','07:17:00','retardo','sensor'),
-  (2,10,'2026-05-04','08:00:00','asistencia','sensor'),
-  (2,1,'2026-05-05',NULL,'falta','manual'),
-  (2,2,'2026-05-05',NULL,'falta','manual'),
-  (2,3,'2026-05-06','07:02:00','asistencia','sensor'),
-  (2,4,'2026-05-06','08:01:00','asistencia','sensor'),
-  (2,5,'2026-05-07','07:21:00','retardo','sensor'),
-  (2,6,'2026-05-07','08:00:00','asistencia','sensor'),
-  (2,7,'2026-05-08',NULL,'falta','manual'),
-  (2,8,'2026-05-08',NULL,'falta','manual'),
-  (2,9,'2026-05-11','07:03:00','asistencia','sensor'),
-  (2,10,'2026-05-11','08:02:00','asistencia','sensor'),
-  (2,1,'2026-05-12','07:16:00','retardo','sensor'),
-  (2,2,'2026-05-12','08:00:00','asistencia','sensor'),
-  (2,3,'2026-05-13',NULL,'falta','manual'),
-  (2,4,'2026-05-13',NULL,'falta','manual'),
-  (2,5,'2026-05-14','07:01:00','asistencia','sensor'),
-  (2,6,'2026-05-14','08:03:00','asistencia','sensor'),
-  (2,7,'2026-05-15','07:20:00','retardo','sensor'),
-  (2,8,'2026-05-15','08:01:00','asistencia','sensor');
- 
--- ── A003 (buen alumno, 2 retardos, 1 falta) ───────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (3,1,'2026-04-20','07:01:00','asistencia','sensor'),
-  (3,2,'2026-04-20','08:00:00','asistencia','sensor'),
-  (3,3,'2026-04-21','07:02:00','asistencia','sensor'),
-  (3,4,'2026-04-21','08:01:00','asistencia','sensor'),
-  (3,5,'2026-04-22','07:00:00','asistencia','sensor'),
-  (3,6,'2026-04-22','08:02:00','asistencia','sensor'),
-  (3,7,'2026-04-23','07:03:00','asistencia','sensor'),
-  (3,8,'2026-04-23','08:00:00','asistencia','sensor'),
-  (3,9,'2026-04-24','07:14:00','retardo','sensor'),
-  (3,10,'2026-04-24','08:01:00','asistencia','sensor'),
-  (3,1,'2026-04-27','07:00:00','asistencia','sensor'),
-  (3,2,'2026-04-27','08:02:00','asistencia','sensor'),
-  (3,3,'2026-04-28','07:01:00','asistencia','sensor'),
-  (3,4,'2026-04-28','08:00:00','asistencia','sensor'),
-  (3,5,'2026-04-29','07:02:00','asistencia','sensor'),
-  (3,6,'2026-04-29','08:01:00','asistencia','sensor'),
-  (3,7,'2026-04-30',NULL,'falta','manual'),
-  (3,8,'2026-04-30',NULL,'falta','manual'),
-  (3,9,'2026-05-04','07:00:00','asistencia','sensor'),
-  (3,10,'2026-05-04','08:03:00','asistencia','sensor'),
-  (3,1,'2026-05-05','07:01:00','asistencia','sensor'),
-  (3,2,'2026-05-05','08:00:00','asistencia','sensor'),
-  (3,3,'2026-05-06','07:02:00','asistencia','sensor'),
-  (3,4,'2026-05-06','08:01:00','asistencia','sensor'),
-  (3,5,'2026-05-07','07:00:00','asistencia','sensor'),
-  (3,6,'2026-05-07','08:02:00','asistencia','sensor'),
-  (3,7,'2026-05-08','07:03:00','asistencia','sensor'),
-  (3,8,'2026-05-08','08:00:00','asistencia','sensor'),
-  (3,9,'2026-05-11','07:01:00','asistencia','sensor'),
-  (3,10,'2026-05-11','08:02:00','asistencia','sensor'),
-  (3,1,'2026-05-12','07:02:00','asistencia','sensor'),
-  (3,2,'2026-05-12','08:00:00','asistencia','sensor'),
-  (3,3,'2026-05-13','07:16:00','retardo','sensor'),
-  (3,4,'2026-05-13','08:03:00','asistencia','sensor'),
-  (3,5,'2026-05-14','07:01:00','asistencia','sensor'),
-  (3,6,'2026-05-14','08:02:00','asistencia','sensor'),
-  (3,7,'2026-05-15','07:00:00','asistencia','sensor'),
-  (3,8,'2026-05-15','08:01:00','asistencia','sensor');
- 
--- ── A004–A010 patrón variado ───────────────────────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  -- A004 buena asistencia
-  (4,1,'2026-04-20','07:02:00','asistencia','sensor'),(4,3,'2026-04-21','07:01:00','asistencia','sensor'),
-  (4,5,'2026-04-22','07:00:00','asistencia','sensor'),(4,7,'2026-04-23','07:03:00','asistencia','sensor'),
-  (4,9,'2026-04-24','07:15:00','retardo','sensor'),(4,1,'2026-04-27','07:01:00','asistencia','sensor'),
-  (4,3,'2026-04-28','07:02:00','asistencia','sensor'),(4,5,'2026-04-29','07:00:00','asistencia','sensor'),
-  (4,7,'2026-04-30','07:01:00','asistencia','sensor'),(4,9,'2026-05-04','07:02:00','asistencia','sensor'),
-  (4,1,'2026-05-05','07:00:00','asistencia','sensor'),(4,3,'2026-05-06','07:01:00','asistencia','sensor'),
-  (4,5,'2026-05-07','07:02:00','asistencia','sensor'),(4,7,'2026-05-08','07:00:00','asistencia','sensor'),
-  (4,9,'2026-05-11','07:18:00','retardo','sensor'),(4,1,'2026-05-12','07:01:00','asistencia','sensor'),
-  (4,3,'2026-05-13','07:02:00','asistencia','sensor'),(4,5,'2026-05-14','07:00:00','asistencia','sensor'),
-  (4,7,'2026-05-15','07:01:00','asistencia','sensor'),
-  -- A005 con faltas y retardos
-  (5,1,'2026-04-20',NULL,'falta','manual'),(5,3,'2026-04-21','07:19:00','retardo','sensor'),
-  (5,5,'2026-04-22',NULL,'falta','manual'),(5,7,'2026-04-23','07:02:00','asistencia','sensor'),
-  (5,9,'2026-04-24','07:01:00','asistencia','sensor'),(5,1,'2026-04-27','07:22:00','retardo','sensor'),
-  (5,3,'2026-04-28',NULL,'falta','manual'),(5,5,'2026-04-29','07:01:00','asistencia','sensor'),
-  (5,7,'2026-04-30','07:00:00','asistencia','sensor'),(5,9,'2026-05-04',NULL,'falta','manual'),
-  (5,1,'2026-05-05','07:02:00','asistencia','sensor'),(5,3,'2026-05-06','07:17:00','retardo','sensor'),
-  (5,5,'2026-05-07',NULL,'falta','manual'),(5,7,'2026-05-08','07:01:00','asistencia','sensor'),
-  (5,9,'2026-05-11','07:00:00','asistencia','sensor'),(5,1,'2026-05-12',NULL,'falta','manual'),
-  (5,3,'2026-05-13','07:02:00','asistencia','sensor'),(5,5,'2026-05-14','07:21:00','retardo','sensor'),
-  (5,7,'2026-05-15',NULL,'falta','manual'),
-  -- A006 normal
-  (6,1,'2026-04-20','07:01:00','asistencia','sensor'),(6,3,'2026-04-21','07:00:00','asistencia','sensor'),
-  (6,5,'2026-04-22','07:02:00','asistencia','sensor'),(6,7,'2026-04-23','07:14:00','retardo','sensor'),
-  (6,9,'2026-04-24','07:01:00','asistencia','sensor'),(6,1,'2026-04-27','07:00:00','asistencia','sensor'),
-  (6,3,'2026-04-28','07:02:00','asistencia','sensor'),(6,5,'2026-04-29',NULL,'falta','manual'),
-  (6,7,'2026-04-30','07:01:00','asistencia','sensor'),(6,9,'2026-05-04','07:00:00','asistencia','sensor'),
-  (6,1,'2026-05-05','07:02:00','asistencia','sensor'),(6,3,'2026-05-06','07:01:00','asistencia','sensor'),
-  (6,5,'2026-05-07','07:00:00','asistencia','sensor'),(6,7,'2026-05-08','07:16:00','retardo','sensor'),
-  (6,9,'2026-05-11','07:01:00','asistencia','sensor'),(6,1,'2026-05-12','07:00:00','asistencia','sensor'),
-  (6,3,'2026-05-13',NULL,'falta','manual'),(6,5,'2026-05-14','07:02:00','asistencia','sensor'),
-  (6,7,'2026-05-15','07:01:00','asistencia','sensor'),
-  -- A007 retardos frecuentes
-  (7,1,'2026-04-20','07:20:00','retardo','sensor'),(7,3,'2026-04-21',NULL,'falta','manual'),
-  (7,5,'2026-04-22','07:01:00','asistencia','sensor'),(7,7,'2026-04-23','07:00:00','asistencia','sensor'),
-  (7,9,'2026-04-24','07:19:00','retardo','sensor'),(7,1,'2026-04-27',NULL,'falta','manual'),
-  (7,3,'2026-04-28','07:02:00','asistencia','sensor'),(7,5,'2026-04-29','07:01:00','asistencia','sensor'),
-  (7,7,'2026-04-30','07:00:00','asistencia','sensor'),(7,9,'2026-05-04','07:18:00','retardo','sensor'),
-  (7,1,'2026-05-05',NULL,'falta','manual'),(7,3,'2026-05-06','07:01:00','asistencia','sensor'),
-  (7,5,'2026-05-07','07:02:00','asistencia','sensor'),(7,7,'2026-05-08','07:00:00','asistencia','sensor'),
-  (7,9,'2026-05-11','07:21:00','retardo','sensor'),(7,1,'2026-05-12',NULL,'falta','manual'),
-  (7,3,'2026-05-13','07:01:00','asistencia','sensor'),(7,5,'2026-05-14','07:00:00','asistencia','sensor'),
-  (7,7,'2026-05-15',NULL,'falta','manual'),
-  -- A008 muy buena
-  (8,1,'2026-04-20','07:01:00','asistencia','sensor'),(8,3,'2026-04-21','07:02:00','asistencia','sensor'),
-  (8,5,'2026-04-22','07:00:00','asistencia','sensor'),(8,7,'2026-04-23','07:01:00','asistencia','sensor'),
-  (8,9,'2026-04-24','07:02:00','asistencia','sensor'),(8,1,'2026-04-27','07:00:00','asistencia','sensor'),
-  (8,3,'2026-04-28','07:15:00','retardo','sensor'),(8,5,'2026-04-29','07:01:00','asistencia','sensor'),
-  (8,7,'2026-04-30','07:02:00','asistencia','sensor'),(8,9,'2026-05-04','07:00:00','asistencia','sensor'),
-  (8,1,'2026-05-05','07:01:00','asistencia','sensor'),(8,3,'2026-05-06','07:02:00','asistencia','sensor'),
-  (8,5,'2026-05-07','07:00:00','asistencia','sensor'),(8,7,'2026-05-08','07:17:00','retardo','sensor'),
-  (8,9,'2026-05-11','07:01:00','asistencia','sensor'),(8,1,'2026-05-12','07:02:00','asistencia','sensor'),
-  (8,3,'2026-05-13','07:00:00','asistencia','sensor'),(8,5,'2026-05-14','07:01:00','asistencia','sensor'),
-  (8,7,'2026-05-15','07:02:00','asistencia','sensor'),
-  -- A009 crítico — mayoría faltas
-  (9,1,'2026-04-20',NULL,'falta','manual'),(9,3,'2026-04-21',NULL,'falta','manual'),
-  (9,5,'2026-04-22','07:22:00','retardo','sensor'),(9,7,'2026-04-23',NULL,'falta','manual'),
-  (9,9,'2026-04-24',NULL,'falta','manual'),(9,1,'2026-04-27','07:01:00','asistencia','sensor'),
-  (9,3,'2026-04-28',NULL,'falta','manual'),(9,5,'2026-04-29',NULL,'falta','manual'),
-  (9,7,'2026-04-30','07:20:00','retardo','sensor'),(9,9,'2026-05-04',NULL,'falta','manual'),
-  (9,1,'2026-05-05',NULL,'falta','manual'),(9,3,'2026-05-06','07:01:00','asistencia','sensor'),
-  (9,5,'2026-05-07',NULL,'falta','manual'),(9,7,'2026-05-08',NULL,'falta','manual'),
-  (9,9,'2026-05-11','07:19:00','retardo','sensor'),(9,1,'2026-05-12',NULL,'falta','manual'),
-  (9,3,'2026-05-13',NULL,'falta','manual'),(9,5,'2026-05-14','07:02:00','asistencia','sensor'),
-  (9,7,'2026-05-15',NULL,'falta','manual'),
-  -- A010 normal
-  (10,1,'2026-04-20','07:02:00','asistencia','sensor'),(10,3,'2026-04-21','07:01:00','asistencia','sensor'),
-  (10,5,'2026-04-22','07:00:00','asistencia','sensor'),(10,7,'2026-04-23','07:16:00','retardo','sensor'),
-  (10,9,'2026-04-24','07:02:00','asistencia','sensor'),(10,1,'2026-04-27','07:01:00','asistencia','sensor'),
-  (10,3,'2026-04-28','07:00:00','asistencia','sensor'),(10,5,'2026-04-29','07:02:00','asistencia','sensor'),
-  (10,7,'2026-04-30','07:01:00','asistencia','sensor'),(10,9,'2026-05-04','07:00:00','asistencia','sensor'),
-  (10,1,'2026-05-05',NULL,'falta','manual'),(10,3,'2026-05-06','07:02:00','asistencia','sensor'),
-  (10,5,'2026-05-07','07:01:00','asistencia','sensor'),(10,7,'2026-05-08','07:00:00','asistencia','sensor'),
-  (10,9,'2026-05-11','07:18:00','retardo','sensor'),(10,1,'2026-05-12','07:01:00','asistencia','sensor'),
-  (10,3,'2026-05-13','07:02:00','asistencia','sensor'),(10,5,'2026-05-14','07:00:00','asistencia','sensor'),
-  (10,7,'2026-05-15','07:01:00','asistencia','sensor');
- 
--- ── 1°B — Alumnos 11-18, Horarios 11-17 ───────────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (11,11,'2026-04-20','09:02:00','asistencia','sensor'),(11,13,'2026-04-21','09:01:00','asistencia','sensor'),
-  (11,15,'2026-04-22','09:00:00','asistencia','sensor'),(11,16,'2026-04-23','09:02:00','asistencia','sensor'),
-  (11,17,'2026-04-24','09:01:00','asistencia','sensor'),(11,11,'2026-04-27','09:18:00','retardo','sensor'),
-  (11,13,'2026-04-28','09:01:00','asistencia','sensor'),(11,15,'2026-04-29','09:00:00','asistencia','sensor'),
-  (11,16,'2026-04-30','09:02:00','asistencia','sensor'),(11,17,'2026-05-04','09:01:00','asistencia','sensor'),
-  (11,11,'2026-05-05','09:00:00','asistencia','sensor'),(11,13,'2026-05-06','09:02:00','asistencia','sensor'),
-  (11,15,'2026-05-07','09:01:00','asistencia','sensor'),(11,16,'2026-05-08','09:16:00','retardo','sensor'),
-  (11,17,'2026-05-11','09:00:00','asistencia','sensor'),(11,11,'2026-05-12','09:01:00','asistencia','sensor'),
-  (11,13,'2026-05-13','09:02:00','asistencia','sensor'),(11,15,'2026-05-14','09:00:00','asistencia','sensor'),
-  (11,16,'2026-05-15','09:01:00','asistencia','sensor'),
-  (12,11,'2026-04-20',NULL,'falta','manual'),(12,13,'2026-04-21','09:20:00','retardo','sensor'),
-  (12,15,'2026-04-22','09:01:00','asistencia','sensor'),(12,16,'2026-04-23',NULL,'falta','manual'),
-  (12,17,'2026-04-24','09:02:00','asistencia','sensor'),(12,11,'2026-04-27','09:01:00','asistencia','sensor'),
-  (12,13,'2026-04-28',NULL,'falta','manual'),(12,15,'2026-04-29','09:19:00','retardo','sensor'),
-  (12,16,'2026-04-30','09:01:00','asistencia','sensor'),(12,17,'2026-05-04',NULL,'falta','manual'),
-  (12,11,'2026-05-05','09:02:00','asistencia','sensor'),(12,13,'2026-05-06','09:01:00','asistencia','sensor'),
-  (12,15,'2026-05-07',NULL,'falta','manual'),(12,16,'2026-05-08','09:21:00','retardo','sensor'),
-  (12,17,'2026-05-11','09:00:00','asistencia','sensor'),(12,11,'2026-05-12',NULL,'falta','manual'),
-  (12,13,'2026-05-13','09:01:00','asistencia','sensor'),(12,15,'2026-05-14','09:02:00','asistencia','sensor'),
-  (12,16,'2026-05-15',NULL,'falta','manual'),
-  (13,11,'2026-04-20','09:01:00','asistencia','sensor'),(13,13,'2026-04-21','09:02:00','asistencia','sensor'),
-  (13,15,'2026-04-22','09:00:00','asistencia','sensor'),(13,16,'2026-04-23','09:01:00','asistencia','sensor'),
-  (13,17,'2026-04-24','09:17:00','retardo','sensor'),(13,11,'2026-04-27','09:02:00','asistencia','sensor'),
-  (13,13,'2026-04-28','09:01:00','asistencia','sensor'),(13,15,'2026-04-29','09:00:00','asistencia','sensor'),
-  (13,16,'2026-04-30',NULL,'falta','manual'),(13,17,'2026-05-04','09:01:00','asistencia','sensor'),
-  (13,11,'2026-05-05','09:02:00','asistencia','sensor'),(13,13,'2026-05-06','09:00:00','asistencia','sensor'),
-  (13,15,'2026-05-07','09:01:00','asistencia','sensor'),(13,16,'2026-05-08','09:02:00','asistencia','sensor'),
-  (13,17,'2026-05-11','09:19:00','retardo','sensor'),(13,11,'2026-05-12','09:01:00','asistencia','sensor'),
-  (13,13,'2026-05-13','09:02:00','asistencia','sensor'),(13,15,'2026-05-14','09:00:00','asistencia','sensor'),
-  (13,16,'2026-05-15','09:01:00','asistencia','sensor'),
-  (14,11,'2026-04-20','09:02:00','asistencia','sensor'),(14,13,'2026-04-21','09:00:00','asistencia','sensor'),
-  (14,15,'2026-04-22','09:01:00','asistencia','sensor'),(14,16,'2026-04-23','09:18:00','retardo','sensor'),
-  (14,17,'2026-04-24','09:02:00','asistencia','sensor'),(14,11,'2026-04-27','09:01:00','asistencia','sensor'),
-  (14,13,'2026-04-28','09:00:00','asistencia','sensor'),(14,15,'2026-04-29','09:02:00','asistencia','sensor'),
-  (14,16,'2026-04-30','09:01:00','asistencia','sensor'),(14,17,'2026-05-04','09:00:00','asistencia','sensor'),
-  (14,11,'2026-05-05',NULL,'falta','manual'),(14,13,'2026-05-06','09:02:00','asistencia','sensor'),
-  (14,15,'2026-05-07','09:01:00','asistencia','sensor'),(14,16,'2026-05-08','09:00:00','asistencia','sensor'),
-  (14,17,'2026-05-11','09:16:00','retardo','sensor'),(14,11,'2026-05-12','09:01:00','asistencia','sensor'),
-  (14,13,'2026-05-13','09:02:00','asistencia','sensor'),(14,15,'2026-05-14','09:00:00','asistencia','sensor'),
-  (14,16,'2026-05-15','09:01:00','asistencia','sensor'),
-  (15,11,'2026-04-20','09:01:00','asistencia','sensor'),(15,13,'2026-04-21','09:02:00','asistencia','sensor'),
-  (15,15,'2026-04-22','09:00:00','asistencia','sensor'),(15,16,'2026-04-23','09:01:00','asistencia','sensor'),
-  (15,17,'2026-04-24','09:02:00','asistencia','sensor'),(15,11,'2026-04-27','09:00:00','asistencia','sensor'),
-  (15,13,'2026-04-28','09:19:00','retardo','sensor'),(15,15,'2026-04-29','09:01:00','asistencia','sensor'),
-  (15,16,'2026-04-30','09:02:00','asistencia','sensor'),(15,17,'2026-05-04','09:00:00','asistencia','sensor'),
-  (15,11,'2026-05-05','09:01:00','asistencia','sensor'),(15,13,'2026-05-06','09:02:00','asistencia','sensor'),
-  (15,15,'2026-05-07','09:00:00','asistencia','sensor'),(15,16,'2026-05-08','09:01:00','asistencia','sensor'),
-  (15,17,'2026-05-11','09:02:00','asistencia','sensor'),(15,11,'2026-05-12','09:17:00','retardo','sensor'),
-  (15,13,'2026-05-13','09:00:00','asistencia','sensor'),(15,15,'2026-05-14','09:01:00','asistencia','sensor'),
-  (15,16,'2026-05-15','09:02:00','asistencia','sensor'),
-  (16,11,'2026-04-20','09:20:00','retardo','sensor'),(16,13,'2026-04-21',NULL,'falta','manual'),
-  (16,15,'2026-04-22','09:01:00','asistencia','sensor'),(16,16,'2026-04-23','09:00:00','asistencia','sensor'),
-  (16,17,'2026-04-24','09:18:00','retardo','sensor'),(16,11,'2026-04-27',NULL,'falta','manual'),
-  (16,13,'2026-04-28','09:02:00','asistencia','sensor'),(16,15,'2026-04-29','09:01:00','asistencia','sensor'),
-  (16,16,'2026-04-30','09:00:00','asistencia','sensor'),(16,17,'2026-05-04','09:21:00','retardo','sensor'),
-  (16,11,'2026-05-05',NULL,'falta','manual'),(16,13,'2026-05-06','09:01:00','asistencia','sensor'),
-  (16,15,'2026-05-07','09:02:00','asistencia','sensor'),(16,16,'2026-05-08','09:00:00','asistencia','sensor'),
-  (16,17,'2026-05-11','09:19:00','retardo','sensor'),(16,11,'2026-05-12',NULL,'falta','manual'),
-  (16,13,'2026-05-13','09:01:00','asistencia','sensor'),(16,15,'2026-05-14','09:02:00','asistencia','sensor'),
-  (16,16,'2026-05-15','09:00:00','asistencia','sensor'),
-  (17,11,'2026-04-20','09:01:00','asistencia','sensor'),(17,13,'2026-04-21','09:02:00','asistencia','sensor'),
-  (17,15,'2026-04-22','09:00:00','asistencia','sensor'),(17,16,'2026-04-23','09:01:00','asistencia','sensor'),
-  (17,17,'2026-04-24','09:02:00','asistencia','sensor'),(17,11,'2026-04-27','09:00:00','asistencia','sensor'),
-  (17,13,'2026-04-28','09:01:00','asistencia','sensor'),(17,15,'2026-04-29','09:16:00','retardo','sensor'),
-  (17,16,'2026-04-30','09:02:00','asistencia','sensor'),(17,17,'2026-05-04','09:01:00','asistencia','sensor'),
-  (17,11,'2026-05-05','09:00:00','asistencia','sensor'),(17,13,'2026-05-06','09:02:00','asistencia','sensor'),
-  (17,15,'2026-05-07','09:01:00','asistencia','sensor'),(17,16,'2026-05-08','09:00:00','asistencia','sensor'),
-  (17,17,'2026-05-11','09:02:00','asistencia','sensor'),(17,11,'2026-05-12','09:01:00','asistencia','sensor'),
-  (17,13,'2026-05-13','09:00:00','asistencia','sensor'),(17,15,'2026-05-14','09:18:00','retardo','sensor'),
-  (17,16,'2026-05-15','09:01:00','asistencia','sensor'),
-  (18,11,'2026-04-20','09:02:00','asistencia','sensor'),(18,13,'2026-04-21','09:01:00','asistencia','sensor'),
-  (18,15,'2026-04-22','09:17:00','retardo','sensor'),(18,16,'2026-04-23','09:02:00','asistencia','sensor'),
-  (18,17,'2026-04-24','09:01:00','asistencia','sensor'),(18,11,'2026-04-27','09:00:00','asistencia','sensor'),
-  (18,13,'2026-04-28','09:02:00','asistencia','sensor'),(18,15,'2026-04-29','09:01:00','asistencia','sensor'),
-  (18,16,'2026-04-30',NULL,'falta','manual'),(18,17,'2026-05-04','09:02:00','asistencia','sensor'),
-  (18,11,'2026-05-05','09:01:00','asistencia','sensor'),(18,13,'2026-05-06','09:00:00','asistencia','sensor'),
-  (18,15,'2026-05-07','09:02:00','asistencia','sensor'),(18,16,'2026-05-08','09:01:00','asistencia','sensor'),
-  (18,17,'2026-05-11','09:20:00','retardo','sensor'),(18,11,'2026-05-12','09:02:00','asistencia','sensor'),
-  (18,13,'2026-05-13','09:01:00','asistencia','sensor'),(18,15,'2026-05-14','09:00:00','asistencia','sensor'),
-  (18,16,'2026-05-15','09:02:00','asistencia','sensor');
- 
--- ── 2°A — Alumnos 19-26, Horarios 18-22 ───────────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (19,18,'2026-04-20','11:02:00','asistencia','sensor'),(19,19,'2026-04-21','11:01:00','asistencia','sensor'),
-  (19,20,'2026-04-22','11:00:00','asistencia','sensor'),(19,21,'2026-04-23','11:02:00','asistencia','sensor'),
-  (19,22,'2026-04-24','11:15:00','retardo','sensor'),(19,18,'2026-04-27','11:01:00','asistencia','sensor'),
-  (19,19,'2026-04-28','11:00:00','asistencia','sensor'),(19,20,'2026-04-29','11:02:00','asistencia','sensor'),
-  (19,21,'2026-04-30','11:01:00','asistencia','sensor'),(19,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (19,18,'2026-05-05','11:02:00','asistencia','sensor'),(19,19,'2026-05-06','11:01:00','asistencia','sensor'),
-  (19,20,'2026-05-07','11:00:00','asistencia','sensor'),(19,21,'2026-05-08','11:18:00','retardo','sensor'),
-  (19,22,'2026-05-11','11:01:00','asistencia','sensor'),(19,18,'2026-05-12','11:00:00','asistencia','sensor'),
-  (19,19,'2026-05-13','11:02:00','asistencia','sensor'),(19,20,'2026-05-14','11:01:00','asistencia','sensor'),
-  (19,21,'2026-05-15','11:00:00','asistencia','sensor'),
-  (20,18,'2026-04-20','11:19:00','retardo','sensor'),(20,19,'2026-04-21',NULL,'falta','manual'),
-  (20,20,'2026-04-22','11:01:00','asistencia','sensor'),(20,21,'2026-04-23',NULL,'falta','manual'),
-  (20,22,'2026-04-24','11:02:00','asistencia','sensor'),(20,18,'2026-04-27','11:00:00','asistencia','sensor'),
-  (20,19,'2026-04-28','11:20:00','retardo','sensor'),(20,20,'2026-04-29',NULL,'falta','manual'),
-  (20,21,'2026-04-30','11:01:00','asistencia','sensor'),(20,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (20,18,'2026-05-05',NULL,'falta','manual'),(20,19,'2026-05-06','11:02:00','asistencia','sensor'),
-  (20,20,'2026-05-07','11:17:00','retardo','sensor'),(20,21,'2026-05-08',NULL,'falta','manual'),
-  (20,22,'2026-05-11','11:01:00','asistencia','sensor'),(20,18,'2026-05-12',NULL,'falta','manual'),
-  (20,19,'2026-05-13','11:02:00','asistencia','sensor'),(20,20,'2026-05-14','11:21:00','retardo','sensor'),
-  (20,21,'2026-05-15',NULL,'falta','manual'),
-  (21,18,'2026-04-20','11:01:00','asistencia','sensor'),(21,19,'2026-04-21','11:02:00','asistencia','sensor'),
-  (21,20,'2026-04-22','11:00:00','asistencia','sensor'),(21,21,'2026-04-23','11:01:00','asistencia','sensor'),
-  (21,22,'2026-04-24','11:02:00','asistencia','sensor'),(21,18,'2026-04-27','11:00:00','asistencia','sensor'),
-  (21,19,'2026-04-28','11:16:00','retardo','sensor'),(21,20,'2026-04-29','11:01:00','asistencia','sensor'),
-  (21,21,'2026-04-30','11:02:00','asistencia','sensor'),(21,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (21,18,'2026-05-05','11:01:00','asistencia','sensor'),(21,19,'2026-05-06','11:02:00','asistencia','sensor'),
-  (21,20,'2026-05-07','11:00:00','asistencia','sensor'),(21,21,'2026-05-08','11:01:00','asistencia','sensor'),
-  (21,22,'2026-05-11','11:19:00','retardo','sensor'),(21,18,'2026-05-12','11:02:00','asistencia','sensor'),
-  (21,19,'2026-05-13','11:01:00','asistencia','sensor'),(21,20,'2026-05-14','11:00:00','asistencia','sensor'),
-  (21,21,'2026-05-15','11:02:00','asistencia','sensor'),
-  (22,18,'2026-04-20','11:02:00','asistencia','sensor'),(22,19,'2026-04-21','11:00:00','asistencia','sensor'),
-  (22,20,'2026-04-22','11:17:00','retardo','sensor'),(22,21,'2026-04-23','11:02:00','asistencia','sensor'),
-  (22,22,'2026-04-24','11:01:00','asistencia','sensor'),(22,18,'2026-04-27',NULL,'falta','manual'),
-  (22,19,'2026-04-28','11:00:00','asistencia','sensor'),(22,20,'2026-04-29','11:02:00','asistencia','sensor'),
-  (22,21,'2026-04-30','11:01:00','asistencia','sensor'),(22,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (22,18,'2026-05-05','11:18:00','retardo','sensor'),(22,19,'2026-05-06','11:02:00','asistencia','sensor'),
-  (22,20,'2026-05-07','11:01:00','asistencia','sensor'),(22,21,'2026-05-08','11:00:00','asistencia','sensor'),
-  (22,22,'2026-05-11','11:02:00','asistencia','sensor'),(22,18,'2026-05-12','11:01:00','asistencia','sensor'),
-  (22,19,'2026-05-13',NULL,'falta','manual'),(22,20,'2026-05-14','11:00:00','asistencia','sensor'),
-  (22,21,'2026-05-15','11:02:00','asistencia','sensor'),
-  (23,18,'2026-04-20','11:01:00','asistencia','sensor'),(23,19,'2026-04-21','11:02:00','asistencia','sensor'),
-  (23,20,'2026-04-22','11:00:00','asistencia','sensor'),(23,21,'2026-04-23','11:16:00','retardo','sensor'),
-  (23,22,'2026-04-24','11:01:00','asistencia','sensor'),(23,18,'2026-04-27','11:02:00','asistencia','sensor'),
-  (23,19,'2026-04-28','11:00:00','asistencia','sensor'),(23,20,'2026-04-29','11:01:00','asistencia','sensor'),
-  (23,21,'2026-04-30','11:02:00','asistencia','sensor'),(23,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (23,18,'2026-05-05','11:01:00','asistencia','sensor'),(23,19,'2026-05-06','11:19:00','retardo','sensor'),
-  (23,20,'2026-05-07','11:02:00','asistencia','sensor'),(23,21,'2026-05-08','11:01:00','asistencia','sensor'),
-  (23,22,'2026-05-11','11:00:00','asistencia','sensor'),(23,18,'2026-05-12','11:02:00','asistencia','sensor'),
-  (23,19,'2026-05-13','11:01:00','asistencia','sensor'),(23,20,'2026-05-14','11:00:00','asistencia','sensor'),
-  (23,21,'2026-05-15','11:02:00','asistencia','sensor'),
-  (24,18,'2026-04-20',NULL,'falta','manual'),(24,19,'2026-04-21','11:20:00','retardo','sensor'),
-  (24,20,'2026-04-22','11:01:00','asistencia','sensor'),(24,21,'2026-04-23',NULL,'falta','manual'),
-  (24,22,'2026-04-24','11:02:00','asistencia','sensor'),(24,18,'2026-04-27','11:01:00','asistencia','sensor'),
-  (24,19,'2026-04-28',NULL,'falta','manual'),(24,20,'2026-04-29','11:00:00','asistencia','sensor'),
-  (24,21,'2026-04-30','11:17:00','retardo','sensor'),(24,22,'2026-05-04',NULL,'falta','manual'),
-  (24,18,'2026-05-05','11:01:00','asistencia','sensor'),(24,19,'2026-05-06','11:02:00','asistencia','sensor'),
-  (24,20,'2026-05-07',NULL,'falta','manual'),(24,21,'2026-05-08','11:18:00','retardo','sensor'),
-  (24,22,'2026-05-11','11:00:00','asistencia','sensor'),(24,18,'2026-05-12',NULL,'falta','manual'),
-  (24,19,'2026-05-13','11:01:00','asistencia','sensor'),(24,20,'2026-05-14','11:02:00','asistencia','sensor'),
-  (24,21,'2026-05-15',NULL,'falta','manual'),
-  (25,18,'2026-04-20','11:02:00','asistencia','sensor'),(25,19,'2026-04-21','11:01:00','asistencia','sensor'),
-  (25,20,'2026-04-22','11:00:00','asistencia','sensor'),(25,21,'2026-04-23','11:02:00','asistencia','sensor'),
-  (25,22,'2026-04-24','11:01:00','asistencia','sensor'),(25,18,'2026-04-27','11:16:00','retardo','sensor'),
-  (25,19,'2026-04-28','11:02:00','asistencia','sensor'),(25,20,'2026-04-29','11:01:00','asistencia','sensor'),
-  (25,21,'2026-04-30','11:00:00','asistencia','sensor'),(25,22,'2026-05-04','11:02:00','asistencia','sensor'),
-  (25,18,'2026-05-05','11:01:00','asistencia','sensor'),(25,19,'2026-05-06','11:00:00','asistencia','sensor'),
-  (25,20,'2026-05-07','11:19:00','retardo','sensor'),(25,21,'2026-05-08','11:02:00','asistencia','sensor'),
-  (25,22,'2026-05-11','11:01:00','asistencia','sensor'),(25,18,'2026-05-12','11:00:00','asistencia','sensor'),
-  (25,19,'2026-05-13','11:02:00','asistencia','sensor'),(25,20,'2026-05-14','11:01:00','asistencia','sensor'),
-  (25,21,'2026-05-15','11:00:00','asistencia','sensor'),
-  (26,18,'2026-04-20','11:01:00','asistencia','sensor'),(26,19,'2026-04-21','11:00:00','asistencia','sensor'),
-  (26,20,'2026-04-22','11:02:00','asistencia','sensor'),(26,21,'2026-04-23','11:01:00','asistencia','sensor'),
-  (26,22,'2026-04-24','11:17:00','retardo','sensor'),(26,18,'2026-04-27','11:00:00','asistencia','sensor'),
-  (26,19,'2026-04-28','11:02:00','asistencia','sensor'),(26,20,'2026-04-29','11:01:00','asistencia','sensor'),
-  (26,21,'2026-04-30',NULL,'falta','manual'),(26,22,'2026-05-04','11:00:00','asistencia','sensor'),
-  (26,18,'2026-05-05','11:02:00','asistencia','sensor'),(26,19,'2026-05-06','11:01:00','asistencia','sensor'),
-  (26,20,'2026-05-07','11:00:00','asistencia','sensor'),(26,21,'2026-05-08','11:02:00','asistencia','sensor'),
-  (26,22,'2026-05-11','11:01:00','asistencia','sensor'),(26,18,'2026-05-12','11:18:00','retardo','sensor'),
-  (26,19,'2026-05-13','11:00:00','asistencia','sensor'),(26,20,'2026-05-14','11:02:00','asistencia','sensor'),
-  (26,21,'2026-05-15','11:01:00','asistencia','sensor');
- 
--- ── 3°A — Alumnos 27-32, Horarios 23-27 ───────────────────────
-INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por) VALUES
-  (27,23,'2026-04-20','12:01:00','asistencia','sensor'),(27,24,'2026-04-21','12:02:00','asistencia','sensor'),
-  (27,25,'2026-04-22','12:00:00','asistencia','sensor'),(27,26,'2026-04-23','12:01:00','asistencia','sensor'),
-  (27,27,'2026-04-24','12:02:00','asistencia','sensor'),(27,23,'2026-04-27','12:17:00','retardo','sensor'),
-  (27,24,'2026-04-28','12:01:00','asistencia','sensor'),(27,25,'2026-04-29','12:00:00','asistencia','sensor'),
-  (27,26,'2026-04-30','12:02:00','asistencia','sensor'),(27,27,'2026-05-04','12:01:00','asistencia','sensor'),
-  (27,23,'2026-05-05','12:00:00','asistencia','sensor'),(27,24,'2026-05-06','12:02:00','asistencia','sensor'),
-  (27,25,'2026-05-07','12:01:00','asistencia','sensor'),(27,26,'2026-05-08','12:18:00','retardo','sensor'),
-  (27,27,'2026-05-11','12:00:00','asistencia','sensor'),(27,23,'2026-05-12','12:02:00','asistencia','sensor'),
-  (27,24,'2026-05-13','12:01:00','asistencia','sensor'),(27,25,'2026-05-14','12:00:00','asistencia','sensor'),
-  (27,26,'2026-05-15','12:02:00','asistencia','sensor'),
-  (28,23,'2026-04-20',NULL,'falta','manual'),(28,24,'2026-04-21','12:20:00','retardo','sensor'),
-  (28,25,'2026-04-22','12:01:00','asistencia','sensor'),(28,26,'2026-04-23',NULL,'falta','manual'),
-  (28,27,'2026-04-24','12:02:00','asistencia','sensor'),(28,23,'2026-04-27','12:01:00','asistencia','sensor'),
-  (28,24,'2026-04-28',NULL,'falta','manual'),(28,25,'2026-04-29','12:00:00','asistencia','sensor'),
-  (28,26,'2026-04-30','12:19:00','retardo','sensor'),(28,27,'2026-05-04',NULL,'falta','manual'),
-  (28,23,'2026-05-05','12:01:00','asistencia','sensor'),(28,24,'2026-05-06','12:02:00','asistencia','sensor'),
-  (28,25,'2026-05-07',NULL,'falta','manual'),(28,26,'2026-05-08','12:18:00','retardo','sensor'),
-  (28,27,'2026-05-11','12:00:00','asistencia','sensor'),(28,23,'2026-05-12',NULL,'falta','manual'),
-  (28,24,'2026-05-13','12:01:00','asistencia','sensor'),(28,25,'2026-05-14','12:02:00','asistencia','sensor'),
-  (28,26,'2026-05-15',NULL,'falta','manual'),
-  (29,23,'2026-04-20','12:02:00','asistencia','sensor'),(29,24,'2026-04-21','12:01:00','asistencia','sensor'),
-  (29,25,'2026-04-22','12:00:00','asistencia','sensor'),(29,26,'2026-04-23','12:02:00','asistencia','sensor'),
-  (29,27,'2026-04-24','12:16:00','retardo','sensor'),(29,23,'2026-04-27','12:01:00','asistencia','sensor'),
-  (29,24,'2026-04-28','12:00:00','asistencia','sensor'),(29,25,'2026-04-29','12:02:00','asistencia','sensor'),
-  (29,26,'2026-04-30','12:01:00','asistencia','sensor'),(29,27,'2026-05-04','12:00:00','asistencia','sensor'),
-  (29,23,'2026-05-05','12:02:00','asistencia','sensor'),(29,24,'2026-05-06','12:01:00','asistencia','sensor'),
-  (29,25,'2026-05-07','12:00:00','asistencia','sensor'),(29,26,'2026-05-08','12:17:00','retardo','sensor'),
-  (29,27,'2026-05-11','12:02:00','asistencia','sensor'),(29,23,'2026-05-12','12:01:00','asistencia','sensor'),
-  (29,24,'2026-05-13','12:00:00','asistencia','sensor'),(29,25,'2026-05-14','12:02:00','asistencia','sensor'),
-  (29,26,'2026-05-15','12:01:00','asistencia','sensor'),
-  (30,23,'2026-04-20','12:01:00','asistencia','sensor'),(30,24,'2026-04-21','12:02:00','asistencia','sensor'),
-  (30,25,'2026-04-22','12:17:00','retardo','sensor'),(30,26,'2026-04-23','12:01:00','asistencia','sensor'),
-  (30,27,'2026-04-24','12:00:00','asistencia','sensor'),(30,23,'2026-04-27','12:02:00','asistencia','sensor'),
-  (30,24,'2026-04-28','12:01:00','asistencia','sensor'),(30,25,'2026-04-29','12:00:00','asistencia','sensor'),
-  (30,26,'2026-04-30',NULL,'falta','manual'),(30,27,'2026-05-04','12:02:00','asistencia','sensor'),
-  (30,23,'2026-05-05','12:01:00','asistencia','sensor'),(30,24,'2026-05-06','12:00:00','asistencia','sensor'),
-  (30,25,'2026-05-07','12:19:00','retardo','sensor'),(30,26,'2026-05-08','12:02:00','asistencia','sensor'),
-  (30,27,'2026-05-11','12:01:00','asistencia','sensor'),(30,23,'2026-05-12','12:00:00','asistencia','sensor'),
-  (30,24,'2026-05-13','12:02:00','asistencia','sensor'),(30,25,'2026-05-14','12:01:00','asistencia','sensor'),
-  (30,26,'2026-05-15','12:00:00','asistencia','sensor'),
-  (31,23,'2026-04-20','12:02:00','asistencia','sensor'),(31,24,'2026-04-21','12:00:00','asistencia','sensor'),
-  (31,25,'2026-04-22','12:01:00','asistencia','sensor'),(31,26,'2026-04-23','12:18:00','retardo','sensor'),
-  (31,27,'2026-04-24','12:02:00','asistencia','sensor'),(31,23,'2026-04-27','12:01:00','asistencia','sensor'),
-  (31,24,'2026-04-28','12:00:00','asistencia','sensor'),(31,25,'2026-04-29','12:02:00','asistencia','sensor'),
-  (31,26,'2026-04-30','12:01:00','asistencia','sensor'),(31,27,'2026-05-04','12:00:00','asistencia','sensor'),
-  (31,23,'2026-05-05','12:16:00','retardo','sensor'),(31,24,'2026-05-06','12:02:00','asistencia','sensor'),
-  (31,25,'2026-05-07','12:01:00','asistencia','sensor'),(31,26,'2026-05-08','12:00:00','asistencia','sensor'),
-  (31,27,'2026-05-11','12:02:00','asistencia','sensor'),(31,23,'2026-05-12','12:01:00','asistencia','sensor'),
-  (31,24,'2026-05-13','12:00:00','asistencia','sensor'),(31,25,'2026-05-14','12:19:00','retardo','sensor'),
-  (31,26,'2026-05-15','12:02:00','asistencia','sensor'),
-  (32,23,'2026-04-20','12:01:00','asistencia','sensor'),(32,24,'2026-04-21','12:02:00','asistencia','sensor'),
-  (32,25,'2026-04-22','12:00:00','asistencia','sensor'),(32,26,'2026-04-23','12:01:00','asistencia','sensor'),
-  (32,27,'2026-04-24','12:20:00','retardo','sensor'),(32,23,'2026-04-27','12:02:00','asistencia','sensor'),
-  (32,24,'2026-04-28','12:01:00','asistencia','sensor'),(32,25,'2026-04-29','12:00:00','asistencia','sensor'),
-  (32,26,'2026-04-30','12:02:00','asistencia','sensor'),(32,27,'2026-05-04',NULL,'falta','manual'),
-  (32,23,'2026-05-05','12:01:00','asistencia','sensor'),(32,24,'2026-05-06','12:00:00','asistencia','sensor'),
-  (32,25,'2026-05-07','12:02:00','asistencia','sensor'),(32,26,'2026-05-08','12:01:00','asistencia','sensor'),
-  (32,27,'2026-05-11','12:00:00','asistencia','sensor'),(32,23,'2026-05-12','12:17:00','retardo','sensor'),
-  (32,24,'2026-05-13','12:02:00','asistencia','sensor'),(32,25,'2026-05-14','12:01:00','asistencia','sensor'),
-  (32,26,'2026-05-15','12:00:00','asistencia','sensor');
- 
--- ── Permisos de ejemplo ───────────────────────────────────────
-INSERT INTO permisos (alumno_id, fecha_inicio, fecha_fin, motivo, activo) VALUES
-  (5,  '2026-05-05', '2026-05-07', 'Cita médica',           1),
-  (9,  '2026-04-28', '2026-04-29', 'Trámite familiar',      1),
-  (20, '2026-05-12', '2026-05-13', 'Competencia deportiva', 1);
- 
-INSERT INTO permiso_horarios (permiso_id, horario_id) VALUES
-  (1, 3),(1, 5),
-  (2, 7),(2, 9),
-  (3, 19),(3, 20);
+DROP TABLE IF EXISTS `grupos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `grupos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `descripcion` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `grupos`
+--
+
+LOCK TABLES `grupos` WRITE;
+/*!40000 ALTER TABLE `grupos` DISABLE KEYS */;
+INSERT INTO `grupos` VALUES (1,'1°A','Primer semestre grupo A',1,'2026-05-19 07:01:26'),(2,'1°B','Primer semestre grupo B',1,'2026-05-19 07:01:26'),(3,'2°A','Segundo semestre grupo A',1,'2026-05-19 07:01:26'),(4,'3°A','Tercer semestre grupo A',1,'2026-05-19 07:01:26');
+/*!40000 ALTER TABLE `grupos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `horarios`
+--
+
+DROP TABLE IF EXISTS `horarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `horarios` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `grupo_id` int unsigned NOT NULL,
+  `materia_id` int unsigned NOT NULL,
+  `dia_semana` tinyint NOT NULL,
+  `hora_inicio` time NOT NULL,
+  `hora_fin` time NOT NULL,
+  `tolerancia_min` int unsigned NOT NULL DEFAULT '10',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_grupo_materia_dia_hora` (`grupo_id`,`dia_semana`,`hora_inicio`),
+  KEY `materia_id` (`materia_id`),
+  KEY `idx_horarios_dia` (`dia_semana`),
+  CONSTRAINT `horarios_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `horarios_ibfk_2` FOREIGN KEY (`materia_id`) REFERENCES `materias` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `horarios`
+--
+
+LOCK TABLES `horarios` WRITE;
+/*!40000 ALTER TABLE `horarios` DISABLE KEYS */;
+INSERT INTO `horarios` VALUES (1,1,1,1,'07:00:00','08:00:00',10),(2,1,2,1,'08:00:00','09:00:00',10),(3,1,3,2,'07:00:00','08:00:00',10),(4,1,4,2,'08:00:00','09:00:00',10),(5,1,5,3,'07:00:00','08:00:00',10),(6,1,6,3,'08:00:00','09:00:00',10),(7,1,7,4,'07:00:00','08:00:00',10),(8,1,1,4,'08:00:00','09:00:00',10),(9,1,2,5,'07:00:00','08:00:00',10),(10,1,8,5,'08:00:00','09:00:00',10),(11,2,1,1,'09:00:00','10:00:00',10),(12,2,2,1,'10:00:00','11:00:00',10),(13,2,3,2,'09:00:00','10:00:00',10),(14,2,4,2,'10:00:00','11:00:00',10),(15,2,5,3,'09:00:00','10:00:00',10),(16,2,7,4,'09:00:00','10:00:00',10),(17,2,8,5,'09:00:00','10:00:00',10),(18,3,1,1,'11:00:00','12:00:00',10),(19,3,5,2,'11:00:00','12:00:00',10),(20,3,7,3,'11:00:00','12:00:00',10),(21,3,8,4,'11:00:00','12:00:00',10),(22,3,4,5,'11:00:00','12:00:00',10),(23,4,1,1,'12:00:00','13:00:00',10),(24,4,5,2,'12:00:00','13:00:00',10),(25,4,8,3,'12:00:00','13:00:00',10),(26,4,7,4,'12:00:00','13:00:00',10),(27,4,2,5,'12:00:00','13:00:00',10);
+/*!40000 ALTER TABLE `horarios` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `materias`
+--
+
+DROP TABLE IF EXISTS `materias`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `materias` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `clave` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `clave` (`clave`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `materias`
+--
+
+LOCK TABLES `materias` WRITE;
+/*!40000 ALTER TABLE `materias` DISABLE KEYS */;
+INSERT INTO `materias` VALUES (1,'Matemáticas','MAT-01',1,'2026-05-19 07:01:26'),(2,'Español','ESP-01',1,'2026-05-19 07:01:26'),(3,'Ciencias','CIE-01',1,'2026-05-19 07:01:26'),(4,'Historia','HIS-01',1,'2026-05-19 07:01:26'),(5,'Inglés','ING-01',1,'2026-05-19 07:01:26'),(6,'Educación Física','EDF-01',1,'2026-05-19 07:01:26'),(7,'Informática','INF-01',1,'2026-05-19 07:01:26'),(8,'Química','QUI-01',1,'2026-05-19 07:01:26');
+/*!40000 ALTER TABLE `materias` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `permiso_horarios`
+--
+
+DROP TABLE IF EXISTS `permiso_horarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `permiso_horarios` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `permiso_id` int unsigned NOT NULL,
+  `horario_id` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_permiso_horario` (`permiso_id`,`horario_id`),
+  KEY `horario_id` (`horario_id`),
+  CONSTRAINT `permiso_horarios_ibfk_1` FOREIGN KEY (`permiso_id`) REFERENCES `permisos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `permiso_horarios_ibfk_2` FOREIGN KEY (`horario_id`) REFERENCES `horarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `permiso_horarios`
+--
+
+LOCK TABLES `permiso_horarios` WRITE;
+/*!40000 ALTER TABLE `permiso_horarios` DISABLE KEYS */;
+INSERT INTO `permiso_horarios` VALUES (7,4,3),(8,4,5),(9,5,19),(10,5,20),(11,6,3),(12,6,4),(13,6,5),(14,6,6);
+/*!40000 ALTER TABLE `permiso_horarios` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `permisos`
+--
+
+DROP TABLE IF EXISTS `permisos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `permisos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `alumno_id` int unsigned NOT NULL,
+  `fecha_inicio` date NOT NULL,
+  `fecha_fin` date NOT NULL,
+  `motivo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_permisos_alumno` (`alumno_id`),
+  KEY `idx_permisos_fechas` (`fecha_inicio`,`fecha_fin`),
+  CONSTRAINT `permisos_ibfk_1` FOREIGN KEY (`alumno_id`) REFERENCES `alumnos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `permisos`
+--
+
+LOCK TABLES `permisos` WRITE;
+/*!40000 ALTER TABLE `permisos` DISABLE KEYS */;
+INSERT INTO `permisos` VALUES (4,5,'2026-05-05','2026-05-07','Cita médica',1,'2026-05-19 15:14:34','2026-05-19 15:14:34'),(5,20,'2026-05-12','2026-05-13','Competencia deportiva',1,'2026-05-19 15:16:58','2026-05-19 15:16:58'),(6,9,'2026-04-28','2026-04-29','Trámite familiar',1,'2026-05-19 15:18:53','2026-05-19 15:18:53');
+/*!40000 ALTER TABLE `permisos` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-05-22 12:47:25
