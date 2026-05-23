@@ -1,7 +1,4 @@
-const axios = require("axios");
 const db = require("../utils/db");
-
-const AGENT_URL = `http://localhost:${process.env.AGENT_PORT || 3001}/cmd`;
 
 async function buscarHuellaLibre() {
   const rows = await db.query(`
@@ -50,9 +47,7 @@ exports.enroll = async (req, res, next) => {
         .json({ ok: false, mensaje: "No hay espacios libres en el sensor" });
     }
 
-    await axios.post(AGENT_URL, {
-      cmd: `ENROLL:${huella_id}:${alumno_id}`,
-    });
+    io.emit("agente:comando", { cmd: `ENROLL:${huella_id}:${alumno_id}` });
 
     const io = req.app.get("io");
     io.emit("sensor:enroll_status", {
@@ -98,9 +93,7 @@ exports.deleteFingerprint = async (req, res, next) => {
         .json({ ok: false, mensaje: "El alumno no tiene huella registrada" });
     }
 
-    await axios.post(AGENT_URL, {
-      cmd: `DELETE:${alumno.huella_id}`,
-    });
+    io.emit("agente:comando", { cmd: `DELETE:${alumno.huella_id}` });
 
     res.json({ ok: true, mensaje: "Comando de eliminación enviado al sensor" });
   } catch (e) {
@@ -117,10 +110,7 @@ exports.cancelEnroll = async (req, res, next) => {
     io.emit("reader:cooldown", readerState.getState());
 
     // Avisa al agente local que cancele el enroll
-    await fetch("http://localhost:3001/cancel-enroll", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    }).catch(() => null); // silencioso si el agente no responde
+    io.emit("agente:comando", { cmd: "CANCEL_ENROLL" }); // silencioso si el agente no responde
 
     res.json({ ok: true, mensaje: "Enroll cancelado" });
   } catch (e) {
