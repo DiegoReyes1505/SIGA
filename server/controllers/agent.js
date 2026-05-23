@@ -47,9 +47,8 @@ exports.enroll = async (req, res, next) => {
         .json({ ok: false, mensaje: "No hay espacios libres en el sensor" });
     }
 
-    io.emit("agente:comando", { cmd: `ENROLL:${huella_id}:${alumno_id}` });
-
     const io = req.app.get("io");
+    io.emit("agente:comando", { cmd: `ENROLL:${huella_id}:${alumno_id}` });
     io.emit("sensor:enroll_status", {
       alumno_id,
       huella_id,
@@ -93,6 +92,7 @@ exports.deleteFingerprint = async (req, res, next) => {
         .json({ ok: false, mensaje: "El alumno no tiene huella registrada" });
     }
 
+    const io = req.app.get("io");
     io.emit("agente:comando", { cmd: `DELETE:${alumno.huella_id}` });
 
     res.json({ ok: true, mensaje: "Comando de eliminación enviado al sensor" });
@@ -108,9 +108,7 @@ exports.cancelEnroll = async (req, res, next) => {
 
     readerState.startCooldown(3);
     io.emit("reader:cooldown", readerState.getState());
-
-    // Avisa al agente local que cancele el enroll
-    io.emit("agente:comando", { cmd: "CANCEL_ENROLL" }); // silencioso si el agente no responde
+    io.emit("agente:comando", { cmd: "CANCEL_ENROLL" });
 
     res.json({ ok: true, mensaje: "Enroll cancelado" });
   } catch (e) {
