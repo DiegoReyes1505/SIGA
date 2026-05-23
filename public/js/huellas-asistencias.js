@@ -52,7 +52,7 @@ async function cargarEstadoLector() {
     estadoLectorDetalle.textContent = !s.online
       ? "Lector desconectado."
       : s.cooldown_active
-        ? `Lector conectado. Cooldown activo por ${s.cooldown_seconds}s. El lector volverá solo a asistencia.`
+        ? `Lector conectado. Cooldown activo por ${s.cooldown_seconds}s. El lector volver\u00e1 solo a asistencia.`
         : s.mode === "enroll"
           ? "Lector en modo enroll."
           : "Lector en modo asistencia.";
@@ -112,9 +112,15 @@ socket.on("asistencia:error", (data) => {
   );
 });
 
-socket.on("reader:mode", cargarEstadoLector);
-socket.on("reader:cooldown", cargarEstadoLector);
-socket.on("sensor:status", cargarEstadoLector);
+// Actualizar detalle del lector ante cualquier cambio de estado
+[
+  "reader:mode",
+  "reader:cooldown",
+  "sensor:status",
+  "sensor:enroll_ok",
+  "sensor:delete_ok",
+  "sensor:enroll_error",
+].forEach((ev) => socket.on(ev, cargarEstadoLector));
 
 (async function init() {
   await cargarEstadoLector();

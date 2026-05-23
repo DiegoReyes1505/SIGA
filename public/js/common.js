@@ -19,11 +19,11 @@ window.SIGA = {
     try {
       data = raw ? JSON.parse(raw) : {};
     } catch {
-      data = { mensaje: raw || "Respuesta no válida del servidor" };
+      data = { mensaje: raw || "Respuesta no v\u00e1lida del servidor" };
     }
 
     if (!res.ok) {
-      throw new Error(data.mensaje || "Error en la petición");
+      throw new Error(data.mensaje || "Error en la petici\u00f3n");
     }
 
     return data;
@@ -47,7 +47,7 @@ window.SIGA = {
       { key: "permisos", label: "Permisos", href: "/permisos.html" },
       { key: "historial", label: "Historial", href: "/historial.html" },
       { key: "dashboard", label: "Dashboard", href: "/dashboard.html" },
-      { key: "analisis", label: "Análisis", href: "/analisis.html" },
+      { key: "analisis", label: "An\u00e1lisis", href: "/analisis.html" },
     ];
 
     nav.innerHTML = items
@@ -60,11 +60,18 @@ window.SIGA = {
   },
 };
 
-// ── Estado del lector ─────────────────────────────────────────
+// ── Estado del lector ────────────────────────────────────────
 let cooldownInterval = null;
 let pintandoEstado = false;
+let pollingTimeout = null; // timeout del polling cuando lector offline
 
-window.SIGA.pintarEstadoLector = async function () {
+window.SIGA.pintarEstadoLector = async function (detenerPolling = false) {
+  // Si viene de un evento de socket, cancelar cualquier polling pendiente
+  if (detenerPolling && pollingTimeout) {
+    clearTimeout(pollingTimeout);
+    pollingTimeout = null;
+  }
+
   if (pintandoEstado) return;
   pintandoEstado = true;
 
@@ -89,7 +96,13 @@ window.SIGA.pintarEstadoLector = async function () {
     if (!online) {
       badge.className = "reader-badge wait";
       badge.textContent = "Verificando lector...";
-      setTimeout(() => window.SIGA.pintarEstadoLector(), 1000);
+      // Solo iniciar polling si no vino de un evento de socket
+      if (!detenerPolling) {
+        pollingTimeout = setTimeout(() => {
+          pollingTimeout = null;
+          window.SIGA.pintarEstadoLector();
+        }, 2000);
+      }
     } else if (cooldown) {
       badge.classList.add("cooldown");
       let secsLeft = data.cooldown_seconds || 0;
@@ -102,7 +115,6 @@ window.SIGA.pintarEstadoLector = async function () {
           cooldownInterval = null;
           badge.className = "reader-badge attendance";
           badge.textContent = "Modo asistencia";
-          // Confirma con el servidor después de 800ms
           setTimeout(() => window.SIGA.pintarEstadoLector(), 800);
         } else {
           badge.textContent = `Cooldown activo (${secsLeft}s)`;
@@ -123,7 +135,7 @@ window.SIGA.pintarEstadoLector = async function () {
   }
 };
 
-// ── Inicialización y eventos de socket ───────────────────────
+// ── Inicializaci\u00f3n y eventos de socket ───────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
   await window.SIGA.pintarEstadoLector();
 
@@ -136,7 +148,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     "sensor:delete_ok",
   ];
 
+  // Al recibir cualquier evento del lector, detener el polling y actualizar
   eventosLector.forEach((evento) => {
-    socket.on(evento, () => window.SIGA.pintarEstadoLector());
+    socket.on(evento, () => window.SIGA.pintarEstadoLector(true));
   });
 });
