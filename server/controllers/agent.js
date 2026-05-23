@@ -15,6 +15,15 @@ async function buscarHuellaLibre() {
   return null;
 }
 
+// Emite un comando al agente local. Si el agente no está conectado, devuelve false.
+function emitirAlAgente(req, cmd) {
+  const getAgente = req.app.get("agenteSocket");
+  const agente = getAgente ? getAgente() : null;
+  if (!agente) return false;
+  agente.emit("agente:comando", { cmd });
+  return true;
+}
+
 exports.enroll = async (req, res, next) => {
   try {
     const { alumno_id } = req.body;
@@ -47,8 +56,14 @@ exports.enroll = async (req, res, next) => {
         .json({ ok: false, mensaje: "No hay espacios libres en el sensor" });
     }
 
+    const enviado = emitirAlAgente(req, `ENROLL:${huella_id}:${alumno_id}`);
+    if (!enviado) {
+      return res
+        .status(503)
+        .json({ ok: false, mensaje: "El agente local no está conectado" });
+    }
+
     const io = req.app.get("io");
-    io.emit("agente:comando", { cmd: `ENROLL:${huella_id}:${alumno_id}` });
     io.emit("sensor:enroll_status", {
       alumno_id,
       huella_id,
@@ -92,8 +107,12 @@ exports.deleteFingerprint = async (req, res, next) => {
         .json({ ok: false, mensaje: "El alumno no tiene huella registrada" });
     }
 
-    const io = req.app.get("io");
-    io.emit("agente:comando", { cmd: `DELETE:${alumno.huella_id}` });
+    const enviado = emitirAlAgente(req, `DELETE:${alumno.huella_id}`);
+    if (!enviado) {
+      return res
+        .status(503)
+        .json({ ok: false, mensaje: "El agente local no está conectado" });
+    }
 
     res.json({ ok: true, mensaje: "Comando de eliminación enviado al sensor" });
   } catch (e) {
@@ -108,7 +127,7 @@ exports.cancelEnroll = async (req, res, next) => {
 
     readerState.startCooldown(3);
     io.emit("reader:cooldown", readerState.getState());
-    io.emit("agente:comando", { cmd: "CANCEL_ENROLL" });
+    emitirAlAgente(req, "CANCEL_ENROLL"); // silencioso si el agente no está
 
     res.json({ ok: true, mensaje: "Enroll cancelado" });
   } catch (e) {
