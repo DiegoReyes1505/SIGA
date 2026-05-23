@@ -1,11 +1,11 @@
 /**
  * SIGA — Agente Local
- * Lee el puerto serial del AS608 y reenvía eventos al servidor en la nube.
- * Corre en la PC de la escuela donde está conectado el Arduino.
+ * Lee el puerto serial del AS608 y reenva eventos al servidor en la nube.
+ * Corre en la PC de la escuela donde est conectado el Arduino.
  *
- * Comunicación bidireccional via Socket.io:
- * - Agente → Servidor: eventos del sensor (match, enroll, delete)
- * - Servidor → Agente: comandos (ENROLL, DELETE, COUNT)
+ * Comunicacin bidireccional via Socket.io:
+ * - Agente  Servidor: eventos del sensor (match, enroll, delete)
+ * - Servidor  Agente: comandos (ENROLL, DELETE, COUNT, CANCEL_ENROLL)
  */
 require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
 
@@ -22,7 +22,7 @@ const AGENT_SECRET = process.env.AGENT_SECRET || "cambiar_en_produccion";
 // ── Pending enrolls: huella_id → alumno_id ───────────────────
 const pendingEnroll = new Map();
 
-// ── Conexión Socket.io al servidor ───────────────────────────
+// ── Conexin Socket.io al servidor ───────────────────────
 const socket = io(SERVER_URL, {
   auth: { secret: AGENT_SECRET },
   reconnection: true,
@@ -39,13 +39,25 @@ socket.on("disconnect", (reason) => {
 });
 
 socket.on("connect_error", (err) => {
-  logger.error(`❌ Error de conexión: ${err.message}`);
+  logger.error(`❌ Error de conexin: ${err.message}`);
 });
 
 // ── Comandos que llegan desde el servidor via Socket.io ──────
 socket.on("agente:comando", ({ cmd }) => {
-  if (!cmd || !port || !port.isOpen) return;
+  if (!cmd) return;
   logger.info("Comando recibido del servidor:", { cmd });
+
+  // Cancelar enroll pendiente: limpiar mapa y no escribir al serial
+  if (cmd === "CANCEL_ENROLL") {
+    pendingEnroll.clear();
+    logger.info("Enroll cancelado, pendingEnroll limpiado.");
+    return;
+  }
+
+  if (!port || !port.isOpen) {
+    logger.warn("Puerto serial no disponible, comando ignorado:", { cmd });
+    return;
+  }
 
   if (cmd.startsWith("ENROLL:")) {
     const parts = cmd.split(":");
@@ -68,7 +80,7 @@ function enviar(evento, data) {
   logger.info(`→ ${evento}`, data);
 }
 
-// ── Parsear línea del serial ──────────────────────────────────
+// ── Parsear lnea del serial ────────────────────────────
 let port; // referencia global para usarla en el handler de socket
 
 function parsearLinea(linea) {
@@ -133,13 +145,13 @@ function parsearLinea(linea) {
   if (linea === "ENROLL:ERROR") {
     return enviar("agente:evento", {
       tipo: "ENROLL_ERROR",
-      mensaje: "Ocurrió un error al registrar la huella",
+      mensaje: "Ocurri un error al registrar la huella",
       raw: linea,
     });
   }
 }
 
-// ── Puerto serial ─────────────────────────────────────────────
+// ── Puerto serial ─────────────────────────────────────
 function iniciarSerial() {
   logger.info(`Abriendo serial: ${SERIAL_PORT} @ ${SERIAL_BAUD} baud`);
 
