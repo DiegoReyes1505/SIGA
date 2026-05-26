@@ -1,0 +1,12 @@
+{
+  "name": "siga-agent-ui",
+  "version": "1.0.0",
+  "description": "Interfaz de escritorio para el agente local SIGA",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

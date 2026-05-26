@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGA — Agente Local</title>
+  <style>
+    :root {
+      --bg:       #0f1117;
+      --surface:  #181c27;
+      --surface2: #1e2333;
+      --border:   #2a3045;
+      --text:     #e2e8f0;
+      --muted:    #7a8499;
+      --primary:  #4f98a3;
+      --success:  #6daa45;
+      --error:    #e05c6a;
+      --warn:     #e8a534;
+      --radius:   8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .brand svg { color: var(--primary); }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      transition: all .3s;
+    }
+    .status-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background .3s;
+    }
+    .status-pill.corriendo .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-pill.detenido  .dot { background: var(--error); }
+    .status-pill.corriendo      { border-color: var(--success); color: var(--success); }
+    .status-pill.detenido       { border-color: var(--error);   color: var(--error); }
+
+    /* Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      overflow: hidden;
+    }
+
+    /* Panel izquierdo */
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    label  { font-size: 12px; color: var(--muted); }
+    input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: var(--primary); }
+    .btn {
+      width: 100%;
+      padding: 9px 16px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:active   { transform: scale(.98); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary  { background: var(--primary); color: #fff; }
+    .btn-danger   { background: var(--error);   color: #fff; margin-top: 8px; }
+    .btn-save     { background: var(--surface2); border: 1px solid var(--primary); color: var(--primary); }
+    .saved-msg    { font-size: 11px; color: var(--success); text-align: center; min-height: 16px; margin-top: 6px; }
+
+    /* Log */
+    section.log-panel { display: flex; flex-direction: column; overflow: hidden; }
+    .log-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .log-toolbar span { font-size: 12px; color: var(--muted); }
+    .btn-clear {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .btn-clear:hover { color: var(--text); border-color: var(--text); }
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .log-line  { display: flex; gap: 10px; }
+    .log-time  { color: var(--muted); flex-shrink: 0; }
+    .log-info   .log-msg { color: var(--text); }
+    .log-error  .log-msg { color: var(--error); }
+    .log-warn   .log-msg { color: var(--warn); }
+    .log-ok     .log-msg { color: var(--success); }
+    .log-system .log-msg { color: var(--primary); font-style: italic; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      SIGA — Agente Local
+    </div>
+    <div class="status-pill detenido" id="statusPill">
+      <span class="dot"></span>
+      <span id="statusText">Detenido</span>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div>
+        <div class="section-title">Control</div>
+        <button class="btn btn-primary" id="btnIniciar">&#9654; Iniciar agente</button>
+        <button class="btn btn-danger"  id="btnDetener" disabled>&#9632; Detener agente</button>
+      </div>
+
+      <div>
+        <div class="section-title">Configuración</div>
+        <div class="field">
+          <label>Puerto serial (ej. COM3)</label>
+          <input type="text" id="cfgPort" placeholder="COM3" />
+        </div>
+        <div class="field">
+          <label>Baud rate</label>
+          <input type="text" id="cfgBaud" placeholder="9600" />
+        </div>
+        <div class="field">
+          <label>URL del servidor</label>
+          <input type="text" id="cfgUrl" placeholder="https://tu-app.railway.app" />
+        </div>
+        <div class="field">
+          <label>Agent Secret</label>
+          <input type="password" id="cfgSecret" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-save" id="btnGuardar">Guardar configuración</button>
+        <div class="saved-msg" id="savedMsg"></div>
+      </div>
+    </aside>
+
+    <section class="log-panel">
+      <div class="log-toolbar">
+        <span>Registro de actividad</span>
+        <button class="btn-clear" id="btnLimpiar">Limpiar</button>
+      </div>
+      <div id="log"></div>
+    </section>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
