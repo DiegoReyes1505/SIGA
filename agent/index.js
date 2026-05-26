@@ -1,11 +1,11 @@
 /**
  * SIGA — Agente Local
- * Lee el puerto serial del AS608 y reenva eventos al servidor en la nube.
- * Corre en la PC de la escuela donde est conectado el Arduino.
+ * Lee el puerto serial del AS608 y reenvia eventos al servidor en la nube.
+ * Corre en la PC de la escuela donde está conectado el Arduino.
  *
- * Comunicacin bidireccional via Socket.io:
- * - Agente  Servidor: eventos del sensor (match, enroll, delete)
- * - Servidor  Agente: comandos (ENROLL, DELETE, COUNT, CANCEL_ENROLL)
+ * Comunicación bidireccional via Socket.io:
+ * - Agente → Servidor: eventos del sensor (match, enroll, delete)
+ * - Servidor → Agente: comandos (ENROLL, DELETE, COUNT, CANCEL_ENROLL)
  */
 require("dotenv").config({ path: require("path").join(__dirname, "../.env") });
 
@@ -14,15 +14,19 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 const { io } = require("socket.io-client");
 const logger = require("../server/utils/logger");
 
-const SERIAL_PORT = process.env.SERIAL_PORT || "COM3";
-const SERIAL_BAUD = parseInt(process.env.SERIAL_BAUD || "9600");
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
+const SERIAL_PORT  = process.env.SERIAL_PORT  || "COM3";
+const SERIAL_BAUD  = parseInt(process.env.SERIAL_BAUD || "9600");
+const SERVER_URL   = process.env.SERVER_URL   || "http://localhost:3000";
 const AGENT_SECRET = process.env.AGENT_SECRET || "cambiar_en_produccion";
 
 // ── Pending enrolls: huella_id → alumno_id ───────────────────
 const pendingEnroll = new Map();
 
-// ── Conexin Socket.io al servidor ───────────────────────
+// ── Último estado conocido del sensor ────────────────────────
+// Se guarda aquí para reenviarlo cada vez que el socket se (re)conecte
+let ultimoEstadoSensor = null; // "SENSOR_OK" | "SENSOR_ERROR" | null
+
+// ── Conexión Socket.io al servidor ───────────────────────────
 const socket = io(SERVER_URL, {
   auth: { secret: AGENT_SECRET },
   reconnection: true,
@@ -32,6 +36,17 @@ const socket = io(SERVER_URL, {
 
 socket.on("connect", () => {
   logger.info(`✅ Conectado al servidor: ${SERVER_URL} (id: ${socket.id})`);
+
+  // Reenviar el último estado del sensor conocido para que el servidor
+  // y los clientes web siempre estén sincronizados, incluso si el evento
+  // llegó antes de que el socket estuviera listo (race condition al arrancar)
+  if (ultimoEstadoSensor) {
+    logger.info(`↺ Reenviando estado del sensor al reconectar: ${ultimoEstadoSensor}`);
+    socket.emit("agente:evento", {
+      tipo: ultimoEstadoSensor,
+      raw:  `STATUS:${ultimoEstadoSensor}`,
+    });
+  }
 });
 
 socket.on("disconnect", (reason) => {
@@ -39,7 +54,7 @@ socket.on("disconnect", (reason) => {
 });
 
 socket.on("connect_error", (err) => {
-  logger.error(`❌ Error de conexin: ${err.message}`);
+  logger.error(`❌ Error de conexión: ${err.message}`);
 });
 
 // ── Comandos que llegan desde el servidor via Socket.io ──────
@@ -47,7 +62,6 @@ socket.on("agente:comando", ({ cmd }) => {
   if (!cmd) return;
   logger.info("Comando recibido del servidor:", { cmd });
 
-  // Cancelar enroll pendiente: limpiar mapa y no escribir al serial
   if (cmd === "CANCEL_ENROLL") {
     pendingEnroll.clear();
     logger.info("Enroll cancelado, pendingEnroll limpiado.");
@@ -60,7 +74,7 @@ socket.on("agente:comando", ({ cmd }) => {
   }
 
   if (cmd.startsWith("ENROLL:")) {
-    const parts = cmd.split(":");
+    const parts    = cmd.split(":");
     const huella_id = parseInt(parts[1]);
     const alumno_id = parseInt(parts[2]);
     if (alumno_id) pendingEnroll.set(huella_id, alumno_id);
@@ -80,18 +94,34 @@ function enviar(evento, data) {
   logger.info(`→ ${evento}`, data);
 }
 
-// ── Parsear lnea del serial ────────────────────────────
-let port; // referencia global para usarla en el handler de socket
+// ── Parsear línea del serial ──────────────────────────────────
+let port;
 
 function parsearLinea(linea) {
   linea = linea.trim();
   logger.debug("Serial:", { linea });
 
-  if (linea === "STATUS:SENSOR_OK")
-    return enviar("agente:evento", { tipo: "SENSOR_OK", raw: linea });
+  if (linea === "STATUS:SENSOR_OK") {
+    ultimoEstadoSensor = "SENSOR_OK";
+    // Si el socket ya está conectado lo enviamos de inmediato;
+    // si no, el handler "connect" lo reenviará en cuanto conecte
+    if (socket.connected) {
+      enviar("agente:evento", { tipo: "SENSOR_OK", raw: linea });
+    } else {
+      logger.warn("Socket aún no conectado, SENSOR_OK se reenviará al conectar.");
+    }
+    return;
+  }
 
-  if (linea === "STATUS:SENSOR_ERROR")
-    return enviar("agente:evento", { tipo: "SENSOR_ERROR", raw: linea });
+  if (linea === "STATUS:SENSOR_ERROR") {
+    ultimoEstadoSensor = "SENSOR_ERROR";
+    if (socket.connected) {
+      enviar("agente:evento", { tipo: "SENSOR_ERROR", raw: linea });
+    } else {
+      logger.warn("Socket aún no conectado, SENSOR_ERROR se reenviará al conectar.");
+    }
+    return;
+  }
 
   if (linea === "VERIFY:NOT_FOUND")
     return enviar("agente:evento", { tipo: "NOT_FOUND", raw: linea });
@@ -118,20 +148,10 @@ function parsearLinea(linea) {
     logger.info("Huellas en sensor:", { count: linea.split(":")[1] });
   }
 
-  // Estados intermedios de enroll
   const estadosEnroll = {
-    "ENROLL:PLACE_FINGER": {
-      estado: "place_finger",
-      mensaje: "Coloca el dedo en el sensor",
-    },
-    "ENROLL:REMOVE_FINGER": {
-      estado: "remove_finger",
-      mensaje: "Retira el dedo del sensor",
-    },
-    "ENROLL:PLACE_AGAIN": {
-      estado: "place_again",
-      mensaje: "Coloca el mismo dedo nuevamente",
-    },
+    "ENROLL:PLACE_FINGER":  { estado: "place_finger",  mensaje: "Coloca el dedo en el sensor" },
+    "ENROLL:REMOVE_FINGER": { estado: "remove_finger", mensaje: "Retira el dedo del sensor" },
+    "ENROLL:PLACE_AGAIN":   { estado: "place_again",   mensaje: "Coloca el mismo dedo nuevamente" },
   };
 
   if (estadosEnroll[linea]) {
@@ -145,20 +165,20 @@ function parsearLinea(linea) {
   if (linea === "ENROLL:ERROR") {
     return enviar("agente:evento", {
       tipo: "ENROLL_ERROR",
-      mensaje: "Ocurri un error al registrar la huella",
+      mensaje: "Ocurrió un error al registrar la huella",
       raw: linea,
     });
   }
 }
 
-// ── Puerto serial ─────────────────────────────────────
+// ── Puerto serial ──────────────────────────────────────────────
 function iniciarSerial() {
   logger.info(`Abriendo serial: ${SERIAL_PORT} @ ${SERIAL_BAUD} baud`);
 
   port = new SerialPort({ path: SERIAL_PORT, baudRate: SERIAL_BAUD });
   const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 
-  port.on("open", () => logger.info("✅ Puerto serial abierto"));
+  port.on("open",  () => logger.info("✅ Puerto serial abierto"));
   port.on("error", (err) => logger.error("Error serial", { msg: err.message }));
   port.on("close", () => {
     logger.warn("Puerto serial cerrado. Reintentando en 5s…");
