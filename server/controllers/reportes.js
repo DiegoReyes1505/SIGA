@@ -1,6 +1,11 @@
 const db = require("../utils/db");
 const ExcelJS = require("exceljs");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
+
+// Ruta al ejecutable de Chromium según el entorno
+const CHROMIUM_PATH =
+  process.env.CHROMIUM_PATH ||
+  "/usr/bin/chromium-browser";
 
 // ── Resumen de hoy ────────────────────────────────────────────────────────────
 exports.resumenGeneral = async (req, res, next) => {
@@ -218,7 +223,6 @@ exports.porMateria = async (req, res, next) => {
 // MÓDULO 7 — EXPORTACIÓN
 // ================================================================
 
-// ── Helper: obtener todos los datos del reporte ───────────────────────────────
 async function obtenerDatosReporte(query = {}) {
   const { fecha_inicio, fecha_fin, dias = 30, umbral_faltas = 3 } = query;
   const desde =
@@ -509,10 +513,18 @@ tr:nth-child(even) td { background:#f9fafb; }
 <div class="footer">SIGA — Sistema Inteligente de Gestión de Asistencias</div>
 </body></html>`;
 
-    browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+    browser = await puppeteer.launch({
+      headless: "new",
+      executablePath: CHROMIUM_PATH,
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
-    const pdf = await page.pdf({ format: "A4", printBackground: true, margin: { top: "12mm", bottom: "12mm", left: "12mm", right: "12mm" } });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "12mm", bottom: "12mm", left: "12mm", right: "12mm" },
+    });
     await browser.close();
     browser = null;
 
