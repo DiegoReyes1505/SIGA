@@ -1,16 +1,15 @@
 /**
  * fechaLocal.js
- * Utilidades de fecha/hora en zona horaria local del servidor (America/Cancun).
- * Usar SIEMPRE este helper en lugar de new Date() directamente,
- * para evitar el desfase UTC vs hora local cuando el servidor corre en la nube.
+ * Utilidades de fecha/hora en zona horaria America/Cancun (UTC-5, sin horario de verano).
+ * Usar SIEMPRE este helper en lugar de new Date() directamente para evitar
+ * el desfase UTC vs hora local cuando el servidor corre en Railway u otra nube.
  */
 
 const ZONA = process.env.TZ_LOCAL || 'America/Cancun';
 
 /**
  * Retorna la fecha/hora actual en la zona configurada.
- * @returns {{ ahora: Date, hoy: string, hora: string, diaSemana: number }}
- *   - ahora:     objeto Date con la hora real del servidor (UTC internamente)
+ * @returns {{ hoy: string, hora: string, diaSemana: number }}
  *   - hoy:       "YYYY-MM-DD" en hora local
  *   - hora:      "HH:MM:SS"   en hora local
  *   - diaSemana: 1=Lunes … 6=Sábado, 7=Domingo  (igual que la BD)
@@ -18,16 +17,18 @@ const ZONA = process.env.TZ_LOCAL || 'America/Cancun';
 function ahoraLocal() {
   const ahora = new Date();
 
-  // Obtener partes en la zona local usando Intl
+  // Extraer todas las partes directamente con Intl — NO construir new Date() con el string
+  // porque Node lo reinterpreta con el offset del servidor, causando un doble desfase.
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: ZONA,
-    year:   'numeric',
-    month:  '2-digit',
-    day:    '2-digit',
-    hour:   '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
+    year:    'numeric',
+    month:   '2-digit',
+    day:     '2-digit',
+    hour:    '2-digit',
+    minute:  '2-digit',
+    second:  '2-digit',
+    weekday: 'long',   // 'Monday', 'Tuesday', etc.
+    hour12:  false
   });
 
   const partes = Object.fromEntries(
@@ -37,14 +38,14 @@ function ahoraLocal() {
   const hoy  = `${partes.year}-${partes.month}-${partes.day}`;
   const hora = `${partes.hour}:${partes.minute}:${partes.second}`;
 
-  // Día de la semana en zona local
-  const fechaLocal = new Date(
-    `${partes.year}-${partes.month}-${partes.day}T${partes.hour}:${partes.minute}:${partes.second}`
-  );
-  const jsDay     = fechaLocal.getDay();          // 0=Dom … 6=Sáb
-  const diaSemana = jsDay === 0 ? 7 : jsDay;      // 1=Lun … 7=Dom
+  // Mapear el nombre del día en inglés al número de la BD (1=Lun … 7=Dom)
+  const MAP_DIA = {
+    Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
+    Friday: 5, Saturday: 6, Sunday: 7
+  };
+  const diaSemana = MAP_DIA[partes.weekday];
 
-  return { ahora, hoy, hora, diaSemana };
+  return { hoy, hora, diaSemana };
 }
 
 module.exports = { ahoraLocal, ZONA };
