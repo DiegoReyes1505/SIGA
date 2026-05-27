@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGA - Materias</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/modules.css" />
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">SIGA</div>
+    <div id="readerStatusBadge" class="reader-badge">Cargando lector...</div>
+    <nav id="sidebarNav" class="sidebar-nav"></nav>
+  </aside>
+  <main class="content">
+    <header class="page-header">
+      <h1>Materias</h1>
+      <p>Administra las materias del plantel.</p>
+    </header>
+
+    <section class="card">
+      <h2 id="formTitle">Nueva materia</h2>
+      <form id="materiaForm">
+        <input type="hidden" id="materiaId" />
+        <div class="grid">
+          <div>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="Ej: Matemáticas" required />
+          </div>
+          <div>
+            <label for="clave">Clave</label>
+            <input type="text" id="clave" placeholder="Ej: MAT101" required />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn primary" id="btnGuardar">Guardar materia</button>
+          <button type="button" class="btn" id="btnCancelar">Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="toolbar">
+        <h2>Listado de materias</h2>
+        <div class="toolbar-right">
+          <input type="text" id="busqueda" placeholder="Buscar..." />
+          <label class="checkbox-row compact">
+            <input type="checkbox" id="verInactivos" />
+            <span>Mostrar inactivas</span>
+          </label>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Clave</th><th>Nombre</th><th>Estatus</th><th>Acciones</th></tr></thead>
+          <tbody id="tablaMaterias"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/materias.js"></script>
+</body>
+</html>

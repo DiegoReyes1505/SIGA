@@ -1,0 +1,126 @@
+/* ── Toast ──────────────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+.toast {
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .25s ease, transform .25s ease;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.toast-ok      { background: #14532d; border-color: #16a34a; }
+.toast.toast-error   { background: #7f1d1d; border-color: #dc2626; }
+.toast.toast-warning { background: #78350f; border-color: #d97706; }
+.toast.toast-info    { background: #1e3a5f; border-color: #2563eb; }
+
+/* ── Modal genérico ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 800;
+  padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.modal-header h2 { margin: 0; font-size: 18px; }
+.modal-close {
+  background: none; border: none; color: #9ca3af;
+  font-size: 22px; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: #e5e7eb; }
+.modal-footer {
+  display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;
+}
+
+/* ── Tabla con estado vacío ─────────────────────────────────── */
+.empty-row td {
+  text-align: center;
+  color: #6b7280;
+  padding: 28px 12px;
+  font-style: italic;
+}
+
+/* ── Colores badge extra ────────────────────────────────────── */
+.badge.asistencia { background: #14532d; }
+.badge.retardo    { background: #78350f; }
+.badge.falta      { background: #7f1d1d; }
+.badge.permiso    { background: #1e3a5f; }
+.badge.activo     { background: #14532d; }
+.badge.inactivo   { background: #374151; color: #9ca3af; }
+
+/* ── Día semana chips ───────────────────────────────────────── */
+.dia-chip {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #cbd5e1;
+}
+
+/* ── Horario grid visual ────────────────────────────────────── */
+.horario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.horario-col-header {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  padding: 4px 0;
+}
+.horario-slot {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 8px 6px;
+  font-size: 12px;
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.horario-slot:hover { border-color: #2563eb; }
+.horario-slot .hs-materia { font-weight: 700; color: #e5e7eb; font-size: 11px; }
+.horario-slot .hs-hora    { color: #9ca3af; font-size: 10px; }
+.horario-slot.empty { cursor: default; }
+.horario-slot.empty:hover { border-color: #374151; }

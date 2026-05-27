@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGA - Horarios</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/modules.css" />
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">SIGA</div>
+    <div id="readerStatusBadge" class="reader-badge">Cargando lector...</div>
+    <nav id="sidebarNav" class="sidebar-nav"></nav>
+  </aside>
+  <main class="content">
+    <header class="page-header">
+      <h1>Horarios</h1>
+      <p>Asigna y edita los horarios por grupo y materia.</p>
+    </header>
+
+    <!-- Formulario -->
+    <section class="card">
+      <h2 id="formTitle">Nuevo horario</h2>
+      <form id="horarioForm">
+        <input type="hidden" id="horarioId" />
+        <div class="grid">
+          <div>
+            <label for="grupo_id">Grupo</label>
+            <select id="grupo_id" required></select>
+          </div>
+          <div>
+            <label for="materia_id">Materia</label>
+            <select id="materia_id" required></select>
+          </div>
+          <div>
+            <label for="dia_semana">Día</label>
+            <select id="dia_semana" required>
+              <option value="1">Lunes</option>
+              <option value="2">Martes</option>
+              <option value="3">Miércoles</option>
+              <option value="4">Jueves</option>
+              <option value="5">Viernes</option>
+              <option value="6">Sábado</option>
+              <option value="0">Domingo</option>
+            </select>
+          </div>
+          <div>
+            <label for="hora_inicio">Hora inicio</label>
+            <input type="time" id="hora_inicio" required />
+          </div>
+          <div>
+            <label for="hora_fin">Hora fin</label>
+            <input type="time" id="hora_fin" required />
+          </div>
+          <div>
+            <label for="tolerancia_min">Tolerancia (min)</label>
+            <input type="number" id="tolerancia_min" value="10" min="0" max="60" />
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn primary" id="btnGuardar">Guardar horario</button>
+          <button type="button" class="btn" id="btnCancelar">Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Filtros y tabla -->
+    <section class="card">
+      <div class="toolbar">
+        <h2>Listado de horarios</h2>
+        <div class="toolbar-right">
+          <select id="filtroGrupo"><option value="">Todos los grupos</option></select>
+          <select id="filtroDia">
+            <option value="">Todos los días</option>
+            <option value="1">Lunes</option><option value="2">Martes</option>
+            <option value="3">Miércoles</option><option value="4">Jueves</option>
+            <option value="5">Viernes</option><option value="6">Sábado</option>
+            <option value="0">Domingo</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Grupo</th><th>Materia</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Tolerancia</th><th>Acciones</th></tr></thead>
+          <tbody id="tablaHorarios"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toastContainer" class="toast-container"></div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/horarios.js"></script>
+</body>
+</html>
