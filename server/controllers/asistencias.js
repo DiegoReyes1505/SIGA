@@ -162,3 +162,93 @@ exports.resumenAlumno = async (req, res, next) => {
     res.json({ ok: true, rango: { desde, hasta }, totales, detalle });
   } catch (e) { next(e); }
 };
+
+// ── Registro automático desde sensor biométrico ────────────────────────────
+// Días: 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo
+// JavaScript getDay(): 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+// Conversión: jsDay===0 → 7, resto igual
+exports.registrarDesdeSensor = async (alumno, io) => {
+  try {
+    const ahora     = new Date();
+    const hoy       = ahora.toISOString().slice(0, 10);        // "YYYY-MM-DD"
+    const hora      = ahora.toTimeString().slice(0, 8);        // "HH:MM:SS"
+    const jsDay     = ahora.getDay();                          // 0=Dom … 6=Sáb
+    const diaSemana = jsDay === 0 ? 7 : jsDay;                 // 1=Lun … 7=Dom
+
+    // Buscar horario activo para el grupo del alumno en este momento
+    const [horario] = await db.query(
+      `SELECT h.*, m.nombre AS materia_nombre
+       FROM horarios h
+       JOIN materias m ON m.id = h.materia_id
+       WHERE h.grupo_id   = ?
+         AND h.dia_semana = ?
+         AND h.hora_inicio <= ?
+         AND h.hora_fin   >= ?
+         AND h.activo     = 1
+       LIMIT 1`,
+      [alumno.grupo_id, diaSemana, hora, hora]
+    );
+
+    if (!horario) {
+      io.emit('asistencia:sin_horario', {
+        alumno_id: alumno.id,
+        alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
+        hora,
+        dia: diaSemana
+      });
+      return { ok: false, mensaje: 'No hay clase activa en este momento para este alumno' };
+    }
+
+    // Verificar registro duplicado (ya registró hoy en este horario)
+    const [existente] = await db.query(
+      'SELECT id, tipo FROM asistencias WHERE alumno_id = ? AND horario_id = ? AND fecha = ?',
+      [alumno.id, horario.id, hoy]
+    );
+
+    if (existente) {
+      io.emit('asistencia:duplicada', {
+        alumno_id: alumno.id,
+        alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
+        tipo:      existente.tipo
+      });
+      return { ok: false, mensaje: `Ya tiene ${existente.tipo} registrada hoy en esta clase` };
+    }
+
+    // Determinar tipo: asistencia o retardo (tolerancia 10 minutos)
+    const [hIni_h, hIni_m] = horario.hora_inicio.split(':').map(Number);
+    const inicioMin  = hIni_h * 60 + hIni_m;
+    const ahoraMin   = ahora.getHours() * 60 + ahora.getMinutes();
+    const TOLERANCIA = 10; // minutos
+    const tipo       = (ahoraMin - inicioMin) > TOLERANCIA ? 'retardo' : 'asistencia';
+
+    // Insertar asistencia
+    const result = await db.query(
+      `INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por)
+       VALUES (?, ?, ?, ?, ?, 'sensor')`,
+      [alumno.id, horario.id, hoy, hora, tipo]
+    );
+
+    // Notificar a todos los clientes web conectados
+    io.emit('asistencia:nueva', {
+      id:           result.insertId,
+      alumno_id:    alumno.id,
+      alumno:       `${alumno.nombre} ${alumno.apellido_pat}`,
+      matricula:    alumno.matricula,
+      grupo:        alumno.grupo,
+      materia:      horario.materia_nombre,
+      tipo,
+      hora_entrada: hora,
+      fecha:        hoy
+    });
+
+    // Cooldown de 5 segundos para evitar doble lectura
+    const readerState = require('./reader-state');
+    readerState.startCooldown(5);
+    io.emit('reader:cooldown', readerState.getState());
+
+    return { ok: true, tipo, alumno_id: alumno.id };
+
+  } catch (e) {
+    return { ok: false, mensaje: e.message };
+  }
+};
