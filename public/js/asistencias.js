@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </td>
       </tr>`;
     }).join('')
-      : '<tr class="empty-row"><td colspan="8">Sin registros</td></tr>';
+      : '<tr class="empty-row"><td colspan="8">Usa los filtros y presiona Buscar</td></tr>';
   }
 
   btnAnt.addEventListener('click', () => { pagina--; renderTabla(); });
@@ -113,14 +113,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnLimpiar.addEventListener('click', () => {
     filtroGrupo.value=''; filtroAlumno.innerHTML='<option value="">Todos</option>';
     filtroTipo.value=''; filtroFI.value=''; filtroFF.value='';
-    buscar();
+    todas = []; renderTabla();
   });
 
   // ── Modal: nuevo registro manual ───────────────────────────────
   btnNuevo.addEventListener('click', () => {
     asistenciaId.value = '';
     form.reset();
-    // Asegurarse que el select de tipo NO tenga la opción falta
     renderSelectTipo(mTipo, false);
     modalTitle.textContent = 'Registro manual';
     mFecha.valueAsDate = new Date();
@@ -158,7 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       mFecha.value   = a.fecha;
       mHoraEnt.value = a.hora_entrada ? a.hora_entrada.slice(0,5) : '';
       mNota.value    = a.nota || '';
-      // En edición: si es falta sólo permite editar la nota
       renderSelectTipo(mTipo, false, a.tipo);
       modalTitle.textContent = 'Editar asistencia';
       modal.classList.remove('hidden');
@@ -205,9 +203,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     catch (e) { SIGA.toast(e.message, 'error'); }
   };
 
-  // Fecha por defecto: hoy
-  const hoy = new Date().toISOString().slice(0, 10);
-  filtroFI.value = hoy;
-  filtroFF.value = hoy;
-  buscar();
+  // Iniciar con tabla vacía y mensaje guía
+  renderTabla();
 });
