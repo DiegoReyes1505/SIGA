@@ -200,6 +200,7 @@ exports.registrarDesdeSensor = async (alumno, io) => {
       [alumno.id, horario.id, hoy, hora, tipo]
     );
 
+    // El sensor regresa inmediatamente a modo attendance — sin cooldown
     io.emit('asistencia:nueva', {
       id:           result.insertId,
       alumno_id:    alumno.id,
@@ -211,10 +212,6 @@ exports.registrarDesdeSensor = async (alumno, io) => {
       hora_entrada: hora,
       fecha:        hoy
     });
-
-    const readerState = require('../services/reader-state');
-    readerState.startCooldown(5);
-    io.emit('reader:cooldown', readerState.getState());
 
     return { ok: true, tipo, alumno_id: alumno.id };
 
