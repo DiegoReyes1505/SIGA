@@ -1,5 +1,8 @@
 const db = require('../utils/db');
 
+const TIPOS_MANUALES = ['asistencia', 'retardo', 'permiso']; // 'falta' excluida — es automática
+const TIPOS_TODOS    = ['asistencia', 'retardo', 'falta', 'permiso'];
+
 // GET /api/asistencias
 exports.listar = async (req, res, next) => {
   try {
@@ -63,16 +66,17 @@ exports.obtener = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// POST /api/asistencias  (registro manual)
+// POST /api/asistencias  (registro manual — faltas NO permitidas)
 exports.crear = async (req, res, next) => {
   try {
     const { alumno_id, horario_id, fecha, hora_entrada, tipo, nota } = req.body;
     if (!alumno_id || !horario_id || !fecha || !tipo)
       return res.status(422).json({ ok: false, mensaje: 'alumno_id, horario_id, fecha y tipo son obligatorios' });
-    const tiposValidos = ['asistencia', 'retardo', 'falta', 'permiso'];
-    if (!tiposValidos.includes(tipo))
-      return res.status(422).json({ ok: false, mensaje: `Tipo inválido. Debe ser: ${tiposValidos.join(', ')}` });
-    // Verificar duplicado
+    if (!TIPOS_MANUALES.includes(tipo))
+      return res.status(422).json({
+        ok: false,
+        mensaje: `Las faltas se generan automáticamente al terminar la clase. Tipos permitidos manualmente: ${TIPOS_MANUALES.join(', ')}`
+      });
     const [dup] = await db.query(
       'SELECT id FROM asistencias WHERE alumno_id = ? AND horario_id = ? AND fecha = ?',
       [alumno_id, horario_id, fecha]
@@ -91,16 +95,26 @@ exports.crear = async (req, res, next) => {
 exports.actualizar = async (req, res, next) => {
   try {
     const { tipo, hora_entrada, nota } = req.body;
-    const tiposValidos = ['asistencia', 'retardo', 'falta', 'permiso'];
-    if (tipo && !tiposValidos.includes(tipo))
-      return res.status(422).json({ ok: false, mensaje: `Tipo inválido. Debe ser: ${tiposValidos.join(', ')}` });
+    if (tipo && !TIPOS_TODOS.includes(tipo))
+      return res.status(422).json({ ok: false, mensaje: `Tipo inválido. Debe ser: ${TIPOS_TODOS.join(', ')}` });
+    // No permitir cambiar a 'falta' manualmente desde la edición
+    if (tipo === 'falta') {
+      // Verificar si el registro actual ya es falta (permitir editar nota)
+      const [actual] = await db.query('SELECT tipo FROM asistencias WHERE id = ?', [req.params.id]);
+      if (!actual) return res.status(404).json({ ok: false, mensaje: 'Asistencia no encontrada' });
+      if (actual.tipo !== 'falta')
+        return res.status(422).json({
+          ok: false,
+          mensaje: 'No se puede cambiar a falta manualmente. Las faltas son generadas automáticamente.'
+        });
+    }
     const [row] = await db.query('SELECT id FROM asistencias WHERE id = ?', [req.params.id]);
     if (!row) return res.status(404).json({ ok: false, mensaje: 'Asistencia no encontrada' });
     await db.query(
       `UPDATE asistencias
-       SET tipo = COALESCE(?, tipo),
+       SET tipo         = COALESCE(?, tipo),
            hora_entrada = COALESCE(?, hora_entrada),
-           nota = COALESCE(?, nota)
+           nota         = COALESCE(?, nota)
        WHERE id = ?`,
       [tipo || null, hora_entrada || null, nota || null, req.params.id]
     );
@@ -111,7 +125,7 @@ exports.actualizar = async (req, res, next) => {
 // DELETE /api/asistencias/:id
 exports.eliminar = async (req, res, next) => {
   try {
-    const [row] = await db.query('SELECT id FROM asistencias WHERE id = ?', [req.params.id]);
+    const [row] = await db.query('SELECT id, tipo FROM asistencias WHERE id = ?', [req.params.id]);
     if (!row) return res.status(404).json({ ok: false, mensaje: 'Asistencia no encontrada' });
     await db.query('DELETE FROM asistencias WHERE id = ?', [req.params.id]);
     res.json({ ok: true, mensaje: 'Registro eliminado correctamente' });

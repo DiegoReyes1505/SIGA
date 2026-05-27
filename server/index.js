@@ -10,7 +10,7 @@ const logger = require("./utils/logger");
 const app = express();
 const server = http.createServer(app);
 
-// ── Socket.io ──────────────────────────────────────────────────
+// ── Socket.io ────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
@@ -27,15 +27,11 @@ io.on("connection", (socket) => {
     agenteSocket = socket;
     logger.info("Agente local conectado", { id: socket.id });
 
-    // El agente confirma enroll exitoso → actualizar BD
     socket.on("agente:enroll", async ({ huella_id, alumno_id }) => {
       try {
         const db = require("./utils/db");
         const readerState = require("./services/reader-state");
-        await db.query("UPDATE alumnos SET huella_id = ? WHERE id = ?", [
-          huella_id,
-          alumno_id,
-        ]);
+        await db.query("UPDATE alumnos SET huella_id = ? WHERE id = ?", [huella_id, alumno_id]);
         readerState.startCooldown(3);
         io.emit("reader:cooldown", readerState.getState());
         io.emit("sensor:enroll_ok", { huella_id, alumno_id });
@@ -46,14 +42,11 @@ io.on("connection", (socket) => {
       }
     });
 
-    // El agente confirma eliminación exitosa → actualizar BD
     socket.on("agente:delete", async ({ huella_id }) => {
       try {
         const db = require("./utils/db");
         const readerState = require("./services/reader-state");
-        await db.query("UPDATE alumnos SET huella_id = NULL WHERE huella_id = ?", [
-          huella_id,
-        ]);
+        await db.query("UPDATE alumnos SET huella_id = NULL WHERE huella_id = ?", [huella_id]);
         readerState.startCooldown(3);
         io.emit("reader:cooldown", readerState.getState());
         io.emit("sensor:delete_ok", { huella_id });
@@ -63,7 +56,6 @@ io.on("connection", (socket) => {
       }
     });
 
-    // El agente reenvía eventos del sensor (MATCH, NOT_FOUND, ENROLL_STATUS…)
     socket.on("agente:evento", async (data) => {
       try {
         const { procesarEventoSensor } = require("./services/sensor-eventos");
@@ -77,61 +69,53 @@ io.on("connection", (socket) => {
       logger.warn("Agente local desconectado", { id: socket.id });
       if (agenteSocket?.id === socket.id) agenteSocket = null;
     });
-
   } else {
     logger.info("Cliente web conectado", { id: socket.id });
-    socket.on("disconnect", () =>
-      logger.info("Cliente web desconectado", { id: socket.id }),
-    );
+    socket.on("disconnect", () => logger.info("Cliente web desconectado", { id: socket.id }));
   }
 });
 
-// Exponer getter del agenteSocket para controllers
 app.set("agenteSocket", () => agenteSocket);
 
-// ── Middleware ─────────────────────────────────────────────────
+// ── Middleware ─────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-app.get("/", (req, res) => {
-  res.redirect("/alumnos.html");
-});
+app.get("/", (req, res) => res.redirect("/alumnos.html"));
 
-// ── Archivos estáticos ─────────────────────────────────────────
+// ── Archivos estáticos ───────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "../public")));
 
-// ── Rutas API ──────────────────────────────────────────────────
-app.use("/api/grupos", require("./routes/grupos"));
-app.use("/api/materias", require("./routes/materias"));
-app.use("/api/horarios", require("./routes/horarios"));
-app.use("/api/alumnos", require("./routes/alumnos"));
+// ── Rutas API ───────────────────────────────────────────────────────
+app.use("/api/grupos",      require("./routes/grupos"));
+app.use("/api/materias",    require("./routes/materias"));
+app.use("/api/horarios",    require("./routes/horarios"));
+app.use("/api/alumnos",     require("./routes/alumnos"));
 app.use("/api/asistencias", require("./routes/asistencias"));
-app.use("/api/sensor", require("./routes/sensor"));
-app.use("/api/reportes", require("./routes/reportes"));
-app.use("/api/agent", require("./routes/agent"));
-app.use("/api/reader", require("./routes/reader"));
-app.use("/api/permisos", require("./routes/permisos"));
+app.use("/api/sensor",      require("./routes/sensor"));
+app.use("/api/reportes",    require("./routes/reportes"));
+app.use("/api/agent",       require("./routes/agent"));
+app.use("/api/reader",      require("./routes/reader"));
+app.use("/api/permisos",    require("./routes/permisos"));
 
-// ── SPA fallback ───────────────────────────────────────────────
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
+// ── SPA fallback ──────────────────────────────────────────────────────
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "../public/index.html")));
 
-// ── Manejador global de errores ────────────────────────────────
+// ── Manejador global de errores ───────────────────────────────────────
 app.use((err, req, res, next) => {
   logger.error(err.message, { stack: err.stack });
-  res.status(err.status || 500).json({
-    ok: false,
-    mensaje: err.message || "Error interno del servidor",
-  });
+  res.status(err.status || 500).json({ ok: false, mensaje: err.message || "Error interno del servidor" });
 });
 
-// ── Arranque ───────────────────────────────────────────────────
+// ── Arranque ────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   logger.info(`Servidor SIGA corriendo en http://localhost:${PORT}`);
+  // Iniciar job de faltas automáticas
+  const { iniciarJobFaltas } = require('./services/faltas');
+  iniciarJobFaltas();
 });
 
 module.exports = { app, io };

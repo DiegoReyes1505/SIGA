@@ -4,7 +4,6 @@ const POR_PAGE  = 30;
 document.addEventListener('DOMContentLoaded', async () => {
   SIGA.renderSidebar('asistencias');
 
-  // ── Elementos principales ────────────────────────────────────
   const filtroGrupo  = document.getElementById('filtroGrupo');
   const filtroAlumno = document.getElementById('filtroAlumno');
   const filtroTipo   = document.getElementById('filtroTipo');
@@ -19,20 +18,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnSig       = document.getElementById('btnSiguiente');
   const paginaInfo   = document.getElementById('paginaInfo');
 
-  // ── Elementos modal ──────────────────────────────────────────
-  const modal        = document.getElementById('modalAsistencia');
-  const modalTitle   = document.getElementById('modalTitle');
-  const modalClose   = document.getElementById('modalClose');
-  const modalCancelar= document.getElementById('modalCancelar');
-  const form         = document.getElementById('asistenciaForm');
-  const asistenciaId = document.getElementById('asistenciaId');
-  const mGrupo       = document.getElementById('m_grupo_id');
-  const mAlumno      = document.getElementById('m_alumno_id');
-  const mHorario     = document.getElementById('m_horario_id');
-  const mFecha       = document.getElementById('m_fecha');
-  const mTipo        = document.getElementById('m_tipo');
-  const mHoraEnt     = document.getElementById('m_hora_entrada');
-  const mNota        = document.getElementById('m_nota');
+  const modal         = document.getElementById('modalAsistencia');
+  const modalTitle    = document.getElementById('modalTitle');
+  const modalClose    = document.getElementById('modalClose');
+  const modalCancelar = document.getElementById('modalCancelar');
+  const form          = document.getElementById('asistenciaForm');
+  const asistenciaId  = document.getElementById('asistenciaId');
+  const mGrupo        = document.getElementById('m_grupo_id');
+  const mAlumno       = document.getElementById('m_alumno_id');
+  const mHorario      = document.getElementById('m_horario_id');
+  const mFecha        = document.getElementById('m_fecha');
+  const mTipo         = document.getElementById('m_tipo');
+  const mHoraEnt      = document.getElementById('m_hora_entrada');
+  const mNota         = document.getElementById('m_nota');
 
   let todas = []; let pagina = 0;
 
@@ -88,8 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnAnt.disabled = pagina === 0;
     btnSig.disabled = pagina >= totalPags - 1;
 
-    tbody.innerHTML = pagData.length ? pagData.map(a => `
-      <tr>
+    tbody.innerHTML = pagData.length ? pagData.map(a => {
+      const esFalta = a.tipo === 'falta';
+      return `<tr>
         <td>${a.fecha}</td>
         <td>${a.alumno}<br><small style="color:#9ca3af">${a.matricula}</small></td>
         <td>${a.grupo}</td>
@@ -98,10 +97,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${a.hora_entrada ? a.hora_entrada.slice(0,5) : '<span style="color:#6b7280">—</span>'}</td>
         <td><span class="badge ${a.registrado_por==='sensor'?'ok':'info'}">${a.registrado_por}</span></td>
         <td>
-          <button class="btn btn-sm" onclick="editarA(${a.id})">Editar</button>
+          ${esFalta
+            ? `<span style="color:#6b7280;font-size:12px">Automática</span>`
+            : `<button class="btn btn-sm" onclick="editarA(${a.id})">Editar</button>`}
           <button class="btn btn-sm danger" onclick="eliminarA(${a.id})">Eliminar</button>
         </td>
-      </tr>`).join('')
+      </tr>`;
+    }).join('')
       : '<tr class="empty-row"><td colspan="8">Sin registros</td></tr>';
   }
 
@@ -114,14 +116,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     buscar();
   });
 
-  // ── Modal: nuevo ─────────────────────────────────────────────
+  // ── Modal: nuevo registro manual ───────────────────────────────
   btnNuevo.addEventListener('click', () => {
-    asistenciaId.value='';
+    asistenciaId.value = '';
     form.reset();
+    // Asegurarse que el select de tipo NO tenga la opción falta
+    renderSelectTipo(mTipo, false);
     modalTitle.textContent = 'Registro manual';
     mFecha.valueAsDate = new Date();
     modal.classList.remove('hidden');
   });
+
   const cerrarModal = () => modal.classList.add('hidden');
   modalClose.addEventListener('click', cerrarModal);
   modalCancelar.addEventListener('click', cerrarModal);
@@ -133,16 +138,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const r = await SIGA.api(`/api/asistencias/${id}`);
       const a = r.datos;
       asistenciaId.value = a.id;
-      // Pre-cargar grupo → alumnos → horarios
-      mGrupo.value = '';
-      // Buscar grupo del alumno
       const rg2 = await SIGA.api('/api/grupos');
-      const grupoAlumno = rg2.datos; // se cargan en el evento change
-      mGrupo.innerHTML = '<option value="">— Grupo —</option>' + grupoAlumno.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('');
-      // Cargar grupo correcto
-      const ra2 = await SIGA.api('/api/grupos');
-      // Encontrar grupo del alumno
-      const grupoId = a.grupo ? ra2.datos.find(g => g.nombre === a.grupo)?.id : null;
+      mGrupo.innerHTML = '<option value="">— Grupo —</option>' +
+        rg2.datos.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('');
+      const grupoId = rg2.datos.find(g => g.nombre === a.grupo)?.id;
       if (grupoId) {
         mGrupo.value = grupoId;
         const [ra3, rh3] = await Promise.all([
@@ -154,16 +153,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         mHorario.innerHTML = '<option value="">— Horario —</option>' +
           rh3.datos.map(h => `<option value="${h.id}">${DIAS_FULL[h.dia_semana]} ${h.hora_inicio.slice(0,5)} — ${h.materia}</option>`).join('');
       }
-      mAlumno.value    = a.alumno_id;
-      mHorario.value   = a.horario_id;
-      mFecha.value     = a.fecha;
-      mTipo.value      = a.tipo;
-      mHoraEnt.value   = a.hora_entrada ? a.hora_entrada.slice(0,5) : '';
-      mNota.value      = a.nota || '';
+      mAlumno.value  = a.alumno_id;
+      mHorario.value = a.horario_id;
+      mFecha.value   = a.fecha;
+      mHoraEnt.value = a.hora_entrada ? a.hora_entrada.slice(0,5) : '';
+      mNota.value    = a.nota || '';
+      // En edición: si es falta sólo permite editar la nota
+      renderSelectTipo(mTipo, false, a.tipo);
       modalTitle.textContent = 'Editar asistencia';
       modal.classList.remove('hidden');
     } catch (e) { SIGA.toast(e.message, 'error'); }
   };
+
+  // ── Helper: opciones del select tipo (sin falta) ────────────────
+  function renderSelectTipo(select, incluirFalta = false, valorActual = 'asistencia') {
+    const opts = ['asistencia', 'retardo', 'permiso'];
+    if (incluirFalta) opts.push('falta');
+    select.innerHTML = opts.map(o =>
+      `<option value="${o}" ${o === valorActual ? 'selected' : ''}>${o.charAt(0).toUpperCase() + o.slice(1)}</option>`
+    ).join('');
+  }
 
   // ── Guardar modal ────────────────────────────────────────────
   form.addEventListener('submit', async e => {
@@ -176,9 +185,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         SIGA.toast('Asistencia actualizada', 'ok');
       } else {
         await SIGA.api('/api/asistencias', { method: 'POST', body: JSON.stringify({
-          alumno_id: +mAlumno.value, horario_id: +mHorario.value,
-          fecha: mFecha.value, tipo: mTipo.value,
-          hora_entrada: mHoraEnt.value || null, nota: mNota.value || null,
+          alumno_id:  +mAlumno.value,
+          horario_id: +mHorario.value,
+          fecha:      mFecha.value,
+          tipo:       mTipo.value,
+          hora_entrada: mHoraEnt.value || null,
+          nota:       mNota.value || null,
         }) });
         SIGA.toast('Asistencia registrada', 'ok');
       }
@@ -188,12 +200,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Eliminar ─────────────────────────────────────────────────
   window.eliminarA = async id => {
-    if (!confirm('¿Eliminar este registro de asistencia?')) return;
+    if (!confirm('¿Eliminar este registro?')) return;
     try { await SIGA.api(`/api/asistencias/${id}`, { method: 'DELETE' }); SIGA.toast('Registro eliminado', 'ok'); buscar(); }
     catch (e) { SIGA.toast(e.message, 'error'); }
   };
 
-  // ── Fecha por defecto: hoy ───────────────────────────────────
+  // Fecha por defecto: hoy
   const hoy = new Date().toISOString().slice(0, 10);
   filtroFI.value = hoy;
   filtroFF.value = hoy;
