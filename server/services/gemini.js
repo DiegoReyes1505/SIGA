@@ -5,7 +5,7 @@
 
 const https = require('https');
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.1-flash-lite-preview';
 const GEMINI_URL   = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 /**
@@ -88,7 +88,7 @@ Recuerda: responde SOLO con el JSON array, sin bloques de código ni texto adici
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
     });
 
     const url = new URL(`${GEMINI_URL}?key=${apiKey}`);
