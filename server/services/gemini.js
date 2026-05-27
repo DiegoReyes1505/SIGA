@@ -3,10 +3,10 @@
  * Requiere variable de entorno: GEMINI_API_KEY
  */
 
-const https = require('https');
+const https = require("https");
 
-const GEMINI_MODEL = 'gemini-3.1-flash-lite-preview';
-const GEMINI_URL   = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_MODEL = "gemini-3.1-flash-lite";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 /**
  * Extrae el primer JSON array válido de un texto que puede contener
@@ -16,7 +16,7 @@ function extraerArray(text) {
   if (!text) return [];
 
   // 1. Quitar bloques markdown ```json ... ``` o ``` ... ```
-  const sinMarkdown = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '');
+  const sinMarkdown = text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "");
 
   // 2. Buscar el primer [ ... ] que sea JSON válido
   const match = sinMarkdown.match(/\[.*?\]/s);
@@ -37,9 +37,15 @@ function extraerArray(text) {
   }
 
   // 4. Fallback final: si el texto contiene líneas con emojis, parsear como lista
-  const lineas = text.split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 10 && (l.match(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/u) || l.match(/^\d+\./)));
+  const lineas = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(
+      (l) =>
+        l.length > 10 &&
+        (l.match(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/u) ||
+          l.match(/^\d+\./)),
+    );
   if (lineas.length >= 3) return lineas;
 
   return [];
@@ -52,14 +58,27 @@ function extraerArray(text) {
  */
 async function generarSugerencias(datos) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY no configurada en variables de entorno');
+  if (!apiKey)
+    throw new Error("GEMINI_API_KEY no configurada en variables de entorno");
 
-  const { resumen, porGrupo = [], faltasCriticas = [], tendenciaMensual = [], porMateria = [] } = datos;
+  const {
+    resumen,
+    porGrupo = [],
+    faltasCriticas = [],
+    tendenciaMensual = [],
+    porMateria = [],
+  } = datos;
   const total = resumen?.total || 1;
   const pctAsistencia = Math.round(((resumen?.asistencias || 0) / total) * 100);
 
-  const grupoMayorFaltas  = porGrupo.reduce((a, b)  => (b.faltas > (a?.faltas || 0) ? b : a), null);
-  const materiaMayorFaltas = porMateria.reduce((a, b) => (b.faltas > (a?.faltas || 0) ? b : a), null);
+  const grupoMayorFaltas = porGrupo.reduce(
+    (a, b) => (b.faltas > (a?.faltas || 0) ? b : a),
+    null,
+  );
+  const materiaMayorFaltas = porMateria.reduce(
+    (a, b) => (b.faltas > (a?.faltas || 0) ? b : a),
+    null,
+  );
 
   const prompt = `Eres un sistema experto en análisis de asistencia escolar.
 Analiza los siguientes datos reales y genera EXACTAMENTE 6 sugerencias accionables y variadas para el personal docente y directivo.
@@ -76,11 +95,11 @@ DATOS DE ASISTENCIA:
 - Faltas: ${resumen?.faltas || 0}
 - Permisos: ${resumen?.permisos || 0}
 - Alumnos con faltas críticas (≥3 faltas): ${faltasCriticas.length}
-${faltasCriticas.length > 0 ? `- Top alumno: ${faltasCriticas[0]?.alumno} (${faltasCriticas[0]?.faltas} faltas, grupo ${faltasCriticas[0]?.grupo})` : ''}
-${grupoMayorFaltas  ? `- Grupo con más faltas: ${grupoMayorFaltas.grupo  || grupoMayorFaltas.nombre} (${grupoMayorFaltas.faltas} faltas)`  : ''}
-${materiaMayorFaltas ? `- Materia con más faltas: ${materiaMayorFaltas.materia || materiaMayorFaltas.nombre} (${materiaMayorFaltas.faltas} faltas)` : ''}
-- Asistencia por grupo: ${porGrupo.map(g  => `${g.grupo}: ${g.asistencias}A/${g.faltas}F`).join(', ')}
-- Tendencia mensual:    ${tendenciaMensual.map(m => `${m.mes}: ${m.faltas} faltas`).join(', ')}
+${faltasCriticas.length > 0 ? `- Top alumno: ${faltasCriticas[0]?.alumno} (${faltasCriticas[0]?.faltas} faltas, grupo ${faltasCriticas[0]?.grupo})` : ""}
+${grupoMayorFaltas ? `- Grupo con más faltas: ${grupoMayorFaltas.grupo || grupoMayorFaltas.nombre} (${grupoMayorFaltas.faltas} faltas)` : ""}
+${materiaMayorFaltas ? `- Materia con más faltas: ${materiaMayorFaltas.materia || materiaMayorFaltas.nombre} (${materiaMayorFaltas.faltas} faltas)` : ""}
+- Asistencia por grupo: ${porGrupo.map((g) => `${g.grupo}: ${g.asistencias}A/${g.faltas}F`).join(", ")}
+- Tendencia mensual:    ${tendenciaMensual.map((m) => `${m.mes}: ${m.faltas} faltas`).join(", ")}
 
 Genera sugerencias variadas que incluyan: intervención con alumnos, mejoras de proceso, reconocimiento positivo, alertas tempranas y estrategias preventivas.
 Recuerda: responde SOLO con el JSON array, sin bloques de código ni texto adicional.`;
@@ -88,52 +107,63 @@ Recuerda: responde SOLO con el JSON array, sin bloques de código ni texto adici
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
     });
 
     const url = new URL(`${GEMINI_URL}?key=${apiKey}`);
     const options = {
       hostname: url.hostname,
-      path    : url.pathname + url.search,
-      method  : 'POST',
-      headers : { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+      path: url.pathname + url.search,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+      },
     };
 
     const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
         try {
           const json = JSON.parse(data);
 
           // Log de errores de la API
           if (json.error) {
-            console.error('[Gemini] Error de API:', json.error.message);
+            console.error("[Gemini] Error de API:", json.error.message);
             return reject(new Error(json.error.message));
           }
 
           // Extraer texto de la respuesta
           const candidate = json.candidates?.[0];
           if (!candidate) {
-            console.error('[Gemini] Sin candidatos en respuesta:', JSON.stringify(json).slice(0, 300));
+            console.error(
+              "[Gemini] Sin candidatos en respuesta:",
+              JSON.stringify(json).slice(0, 300),
+            );
             return resolve([]);
           }
 
-          const text = candidate.content?.parts?.[0]?.text || '';
-          console.log('[Gemini] Respuesta raw (primeros 400 chars):', text.slice(0, 400));
+          const text = candidate.content?.parts?.[0]?.text || "";
+          console.log(
+            "[Gemini] Respuesta raw (primeros 400 chars):",
+            text.slice(0, 400),
+          );
 
           const sugerencias = extraerArray(text);
-          console.log('[Gemini] Sugerencias extraídas:', sugerencias.length);
+          console.log("[Gemini] Sugerencias extraídas:", sugerencias.length);
           resolve(sugerencias);
         } catch (e) {
-          console.error('[Gemini] Error al parsear respuesta:', e.message);
-          reject(new Error('Error al parsear respuesta de Gemini: ' + e.message));
+          console.error("[Gemini] Error al parsear respuesta:", e.message);
+          reject(
+            new Error("Error al parsear respuesta de Gemini: " + e.message),
+          );
         }
       });
     });
 
-    req.on('error', (e) => {
-      console.error('[Gemini] Error de red:', e.message);
+    req.on("error", (e) => {
+      console.error("[Gemini] Error de red:", e.message);
       reject(e);
     });
     req.write(body);
