@@ -11,6 +11,7 @@
     "db:seed": "node database/seeds/run.js"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^123.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "exceljs": "^4.4.0",

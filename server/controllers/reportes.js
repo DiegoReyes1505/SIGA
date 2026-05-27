@@ -1,9 +1,8 @@
-const db       = require('../utils/db');
-const ExcelJS  = require('exceljs');
+const db        = require('../utils/db');
+const ExcelJS   = require('exceljs');
 const puppeteer = require('puppeteer-core');
+const chromium  = require('@sparticuz/chromium');
 const { generarSugerencias } = require('../services/gemini');
-
-const CHROMIUM_PATH = process.env.CHROMIUM_PATH || '/usr/bin/chromium-browser';
 
 // ── Resumen de hoy ────────────────────────────────────────────────────────────
 exports.resumenGeneral = async (req, res, next) => {
@@ -172,17 +171,11 @@ exports.sugerenciasIA = async (req, res, next) => {
     ]);
 
     const sugerencias = await generarSugerencias({
-      resumen: resumen[0],
-      porGrupo,
-      faltasCriticas,
-      tendenciaMensual,
-      porMateria
+      resumen: resumen[0], porGrupo, faltasCriticas, tendenciaMensual, porMateria
     });
 
     res.json({ ok: true, sugerencias, generadas: new Date().toISOString(), periodo: { desde, hasta } });
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 };
 
 // ================================================================
@@ -191,7 +184,7 @@ exports.sugerenciasIA = async (req, res, next) => {
 async function obtenerDatosReporte(query = {}) {
   const { fecha_inicio, fecha_fin, dias = 30, umbral_faltas = 3 } = query;
   const desde = fecha_inicio || new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
-  const hasta = fecha_fin || new Date().toISOString().slice(0, 10);
+  const hasta  = fecha_fin   || new Date().toISOString().slice(0, 10);
 
   const [resumen, porGrupo, faltasCriticas, tendenciaMensual, porMateria] = await Promise.all([
     db.query(`SELECT COUNT(CASE WHEN tipo='asistencia' THEN 1 END) AS asistencias, COUNT(CASE WHEN tipo='retardo' THEN 1 END) AS retardos, COUNT(CASE WHEN tipo='falta' THEN 1 END) AS faltas, COUNT(CASE WHEN tipo='permiso' THEN 1 END) AS permisos, COUNT(*) AS total FROM asistencias WHERE fecha BETWEEN ? AND ?`, [desde, hasta]),
@@ -201,12 +194,11 @@ async function obtenerDatosReporte(query = {}) {
     db.query(`SELECT m.nombre AS materia, COUNT(CASE WHEN a.tipo='falta' THEN 1 END) AS faltas FROM asistencias a JOIN horarios h ON h.id=a.horario_id JOIN materias m ON m.id=h.materia_id WHERE a.fecha BETWEEN ? AND ? GROUP BY m.id ORDER BY faltas DESC LIMIT 5`, [desde, hasta])
   ]);
 
-  // Intentar obtener sugerencias IA (no bloquea exportación si falla)
   let sugerencias = [];
   try {
     sugerencias = await generarSugerencias({ resumen: resumen[0], porGrupo, faltasCriticas, tendenciaMensual, porMateria });
   } catch (e) {
-    console.warn('Gemini no disponible para exportación:', e.message);
+    console.warn('[Reportes] Gemini no disponible para exportación:', e.message);
   }
 
   return { desde, hasta, resumen: resumen[0] || {}, porGrupo, faltasCriticas, tendenciaMensual, porMateria, sugerencias };
@@ -229,7 +221,7 @@ exports.exportarExcel = async (req, res, next) => {
       border: { bottom: { style: 'thin', color: { argb: 'FFcccccc' } } }
     };
     const estiloNumero = { alignment: { horizontal: 'right' }, numFmt: '#,##0' };
-    const estiloPct   = { alignment: { horizontal: 'right' }, numFmt: '0.0%' };
+    const estiloPct    = { alignment: { horizontal: 'right' }, numFmt: '0.0%' };
     const aplicarEncabezado = (row) => { row.eachCell(c => Object.assign(c, estiloEncabezado)); row.height = 22; };
 
     // HOJA 1 — Resumen
@@ -407,10 +399,21 @@ tr:nth-child(even) td { background:#f9fafb; }
 <div class="footer">SIGA — Sistema Inteligente de Gestión de Asistencias</div>
 </body></html>`;
 
-    browser = await puppeteer.launch({ headless: 'new', executablePath: CHROMIUM_PATH, args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage'] });
+    // Lanzar Chromium empaquetado (funciona en Railway sin instalación del sistema)
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless
+    });
+
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdf = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '12mm', bottom: '12mm', left: '12mm', right: '12mm' } });
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '12mm', bottom: '12mm', left: '12mm', right: '12mm' }
+    });
     await browser.close(); browser = null;
 
     const fecha = new Date().toISOString().slice(0, 10);
