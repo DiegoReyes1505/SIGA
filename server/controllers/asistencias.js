@@ -1,4 +1,4 @@
-const db          = require('../utils/db');
+const db             = require('../utils/db');
 const { ahoraLocal } = require('../utils/fechaLocal');
 
 const TIPOS_MANUALES = ['asistencia', 'retardo', 'permiso'];
@@ -155,19 +155,6 @@ exports.registrarDesdeSensor = async (alumno, io) => {
   try {
     const { hoy, hora, diaSemana } = ahoraLocal();
 
-    // ── LOGS DE DIAGNÓSTICO — borrar después de confirmar que funciona ──
-    console.log('[SENSOR] Buscando horario con:');
-    console.log('  grupo_id  :', alumno.grupo_id);
-    console.log('  diaSemana :', diaSemana, ' (1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab, 7=Dom)');
-    console.log('  hora      :', hora);
-    console.log('  hoy       :', hoy);
-    const todosHorarios = await db.query(
-      'SELECT id, dia_semana, hora_inicio, hora_fin FROM horarios WHERE grupo_id = ?',
-      [alumno.grupo_id]
-    );
-    console.log('[SENSOR] Horarios del grupo en BD:', JSON.stringify(todosHorarios));
-    // ──────────────────────────────────────────────────
-
     const [horario] = await db.query(
       `SELECT h.*, m.nombre AS materia_nombre
        FROM horarios h
@@ -181,7 +168,6 @@ exports.registrarDesdeSensor = async (alumno, io) => {
     );
 
     if (!horario) {
-      console.log('[SENSOR] ❌ Sin horario coincidente para los valores anteriores');
       io.emit('asistencia:sin_horario', {
         alumno_id: alumno.id,
         alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
@@ -190,14 +176,16 @@ exports.registrarDesdeSensor = async (alumno, io) => {
       return { ok: false, mensaje: 'No hay clase activa en este momento para este alumno' };
     }
 
-    console.log('[SENSOR] ✅ Horario encontrado:', horario.id, horario.materia_nombre);
-
     const [existente] = await db.query(
       'SELECT id, tipo FROM asistencias WHERE alumno_id = ? AND horario_id = ? AND fecha = ?',
       [alumno.id, horario.id, hoy]
     );
     if (existente) {
-      io.emit('asistencia:duplicada', { alumno_id: alumno.id, alumno: `${alumno.nombre} ${alumno.apellido_pat}`, tipo: existente.tipo });
+      io.emit('asistencia:duplicada', {
+        alumno_id: alumno.id,
+        alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
+        tipo:      existente.tipo
+      });
       return { ok: false, mensaje: `Ya tiene ${existente.tipo} registrada hoy en esta clase` };
     }
 
@@ -224,7 +212,7 @@ exports.registrarDesdeSensor = async (alumno, io) => {
       fecha:        hoy
     });
 
-    const readerState = require('./reader-state');
+    const readerState = require('../services/reader-state');
     readerState.startCooldown(5);
     io.emit('reader:cooldown', readerState.getState());
 

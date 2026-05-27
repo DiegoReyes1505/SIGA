@@ -1,24 +1,28 @@
 /**
  * fechaLocal.js
- * Utilidades de fecha/hora en zona horaria America/Cancun (UTC-5, sin horario de verano).
+ * Utilidades de fecha/hora en zona horaria America/Mexico_City (UTC-6, con horario de verano).
  * Usar SIEMPRE este helper en lugar de new Date() directamente para evitar
  * el desfase UTC vs hora local cuando el servidor corre en Railway u otra nube.
+ *
+ * Para cambiar la zona, establece la variable de entorno TZ_LOCAL.
+ * Ejemplo: TZ_LOCAL=America/Cancun
  */
 
-const ZONA = process.env.TZ_LOCAL || 'America/Cancun';
+const ZONA = process.env.TZ_LOCAL || 'America/Mexico_City';
 
 /**
  * Retorna la fecha/hora actual en la zona configurada.
  * @returns {{ hoy: string, hora: string, diaSemana: number }}
  *   - hoy:       "YYYY-MM-DD" en hora local
  *   - hora:      "HH:MM:SS"   en hora local
- *   - diaSemana: 1=Lunes … 6=Sábado, 7=Domingo  (igual que la BD)
+ *   - diaSemana: 1=Lunes … 7=Domingo  (igual que la BD)
  */
 function ahoraLocal() {
   const ahora = new Date();
 
-  // Extraer todas las partes directamente con Intl — NO construir new Date() con el string
-  // porque Node lo reinterpreta con el offset del servidor, causando un doble desfase.
+  // Extraer todas las partes directamente con Intl.
+  // NO construir new Date() con el string resultante: Node reinterpreta
+  // el string con el offset del servidor, causando un doble desfase.
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: ZONA,
     year:    'numeric',
@@ -38,7 +42,7 @@ function ahoraLocal() {
   const hoy  = `${partes.year}-${partes.month}-${partes.day}`;
   const hora = `${partes.hour}:${partes.minute}:${partes.second}`;
 
-  // Mapear el nombre del día en inglés al número de la BD (1=Lun … 7=Dom)
+  // Mapear el nombre del día al número de la BD (1=Lun … 7=Dom)
   const MAP_DIA = {
     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
     Friday: 5, Saturday: 6, Sunday: 7
