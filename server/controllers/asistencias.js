@@ -1,4 +1,5 @@
-const db = require('../utils/db');
+const db          = require('../utils/db');
+const { ahoraLocal } = require('../utils/fechaLocal');
 
 const TIPOS_MANUALES = ['asistencia', 'retardo', 'permiso']; // 'falta' excluida — es automática
 const TIPOS_TODOS    = ['asistencia', 'retardo', 'falta', 'permiso'];
@@ -162,18 +163,13 @@ exports.resumenAlumno = async (req, res, next) => {
 };
 
 // ── Registro automático desde sensor biométrico ────────────────────────────
-// Días en BD: 1=Lunes ... 7=Domingo
-// JavaScript getDay(): 0=Dom, 1=Lun ... 6=Sáb  →  conversión: 0→7, resto igual
+// Días en BD: 1=Lunes … 7=Domingo  (igual que el helper ahoraLocal)
 exports.registrarDesdeSensor = async (alumno, io) => {
   try {
-    const ahora     = new Date();
-    const hoy       = ahora.toISOString().slice(0, 10);   // "YYYY-MM-DD"
-    const hora      = ahora.toTimeString().slice(0, 8);   // "HH:MM:SS"
-    const jsDay     = ahora.getDay();
-    const diaSemana = jsDay === 0 ? 7 : jsDay;            // 1=Lun … 7=Dom
+    // Usar hora local de Cancún, no UTC del servidor
+    const { hoy, hora, diaSemana, ahora } = ahoraLocal();
 
     // Buscar horario activo para el grupo del alumno en este momento
-    // Nota: la tabla horarios NO tiene columna 'activo'
     const [horario] = await db.query(
       `SELECT h.*, m.nombre AS materia_nombre
        FROM horarios h
@@ -214,7 +210,8 @@ exports.registrarDesdeSensor = async (alumno, io) => {
     // Determinar tipo usando tolerancia_min de la BD (default 10)
     const [hIni_h, hIni_m] = horario.hora_inicio.split(':').map(Number);
     const inicioMin  = hIni_h * 60 + hIni_m;
-    const ahoraMin   = ahora.getHours() * 60 + ahora.getMinutes();
+    const [hora_h, hora_m] = hora.split(':').map(Number);
+    const ahoraMin   = hora_h * 60 + hora_m;
     const tolerancia = horario.tolerancia_min || 10;
     const tipo       = (ahoraMin - inicioMin) > tolerancia ? 'retardo' : 'asistencia';
 
