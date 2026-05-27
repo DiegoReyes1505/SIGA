@@ -1,7 +1,7 @@
 const db          = require('../utils/db');
 const { ahoraLocal } = require('../utils/fechaLocal');
 
-const TIPOS_MANUALES = ['asistencia', 'retardo', 'permiso']; // 'falta' excluida — es automática
+const TIPOS_MANUALES = ['asistencia', 'retardo', 'permiso'];
 const TIPOS_TODOS    = ['asistencia', 'retardo', 'falta', 'permiso'];
 
 // GET /api/asistencias
@@ -67,17 +67,14 @@ exports.obtener = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// POST /api/asistencias  (registro manual — faltas NO permitidas)
+// POST /api/asistencias
 exports.crear = async (req, res, next) => {
   try {
     const { alumno_id, horario_id, fecha, hora_entrada, tipo, nota } = req.body;
     if (!alumno_id || !horario_id || !fecha || !tipo)
       return res.status(422).json({ ok: false, mensaje: 'alumno_id, horario_id, fecha y tipo son obligatorios' });
     if (!TIPOS_MANUALES.includes(tipo))
-      return res.status(422).json({
-        ok: false,
-        mensaje: `Las faltas se generan automáticamente al terminar la clase. Tipos permitidos manualmente: ${TIPOS_MANUALES.join(', ')}`
-      });
+      return res.status(422).json({ ok: false, mensaje: `Tipos permitidos: ${TIPOS_MANUALES.join(', ')}` });
     const [dup] = await db.query(
       'SELECT id FROM asistencias WHERE alumno_id = ? AND horario_id = ? AND fecha = ?',
       [alumno_id, horario_id, fecha]
@@ -102,19 +99,12 @@ exports.actualizar = async (req, res, next) => {
       const [actual] = await db.query('SELECT tipo FROM asistencias WHERE id = ?', [req.params.id]);
       if (!actual) return res.status(404).json({ ok: false, mensaje: 'Asistencia no encontrada' });
       if (actual.tipo !== 'falta')
-        return res.status(422).json({
-          ok: false,
-          mensaje: 'No se puede cambiar a falta manualmente. Las faltas son generadas automáticamente.'
-        });
+        return res.status(422).json({ ok: false, mensaje: 'No se puede cambiar a falta manualmente.' });
     }
     const [row] = await db.query('SELECT id FROM asistencias WHERE id = ?', [req.params.id]);
     if (!row) return res.status(404).json({ ok: false, mensaje: 'Asistencia no encontrada' });
     await db.query(
-      `UPDATE asistencias
-       SET tipo         = COALESCE(?, tipo),
-           hora_entrada = COALESCE(?, hora_entrada),
-           nota         = COALESCE(?, nota)
-       WHERE id = ?`,
+      `UPDATE asistencias SET tipo = COALESCE(?, tipo), hora_entrada = COALESCE(?, hora_entrada), nota = COALESCE(?, nota) WHERE id = ?`,
       [tipo || null, hora_entrada || null, nota || null, req.params.id]
     );
     res.json({ ok: true, mensaje: 'Asistencia actualizada correctamente' });
@@ -138,14 +128,12 @@ exports.resumenAlumno = async (req, res, next) => {
     const desde = fecha_inicio || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
     const hasta = fecha_fin   || new Date().toISOString().slice(0, 10);
     const [totales] = await db.query(
-      `SELECT
-        COUNT(CASE WHEN tipo = 'asistencia' THEN 1 END) AS asistencias,
-        COUNT(CASE WHEN tipo = 'retardo'    THEN 1 END) AS retardos,
-        COUNT(CASE WHEN tipo = 'falta'      THEN 1 END) AS faltas,
-        COUNT(CASE WHEN tipo = 'permiso'    THEN 1 END) AS permisos,
-        COUNT(*) AS total
-       FROM asistencias
-       WHERE alumno_id = ? AND fecha BETWEEN ? AND ?`,
+      `SELECT COUNT(CASE WHEN tipo='asistencia' THEN 1 END) AS asistencias,
+              COUNT(CASE WHEN tipo='retardo'    THEN 1 END) AS retardos,
+              COUNT(CASE WHEN tipo='falta'      THEN 1 END) AS faltas,
+              COUNT(CASE WHEN tipo='permiso'    THEN 1 END) AS permisos,
+              COUNT(*) AS total
+       FROM asistencias WHERE alumno_id = ? AND fecha BETWEEN ? AND ?`,
       [req.params.alumno_id, desde, hasta]
     );
     const detalle = await db.query(
@@ -163,13 +151,23 @@ exports.resumenAlumno = async (req, res, next) => {
 };
 
 // ── Registro automático desde sensor biométrico ────────────────────────────
-// Días en BD: 1=Lunes … 7=Domingo  (igual que el helper ahoraLocal)
 exports.registrarDesdeSensor = async (alumno, io) => {
   try {
-    // Usar hora local de Cancún, no UTC del servidor
-    const { hoy, hora, diaSemana, ahora } = ahoraLocal();
+    const { hoy, hora, diaSemana } = ahoraLocal();
 
-    // Buscar horario activo para el grupo del alumno en este momento
+    // ── LOGS DE DIAGNÓSTICO — borrar después de confirmar que funciona ──
+    console.log('[SENSOR] Buscando horario con:');
+    console.log('  grupo_id  :', alumno.grupo_id);
+    console.log('  diaSemana :', diaSemana, ' (1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab, 7=Dom)');
+    console.log('  hora      :', hora);
+    console.log('  hoy       :', hoy);
+    const todosHorarios = await db.query(
+      'SELECT id, dia_semana, hora_inicio, hora_fin FROM horarios WHERE grupo_id = ?',
+      [alumno.grupo_id]
+    );
+    console.log('[SENSOR] Horarios del grupo en BD:', JSON.stringify(todosHorarios));
+    // ──────────────────────────────────────────────────
+
     const [horario] = await db.query(
       `SELECT h.*, m.nombre AS materia_nombre
        FROM horarios h
@@ -183,46 +181,37 @@ exports.registrarDesdeSensor = async (alumno, io) => {
     );
 
     if (!horario) {
+      console.log('[SENSOR] ❌ Sin horario coincidente para los valores anteriores');
       io.emit('asistencia:sin_horario', {
         alumno_id: alumno.id,
         alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
-        hora,
-        dia: diaSemana
+        hora, dia: diaSemana
       });
       return { ok: false, mensaje: 'No hay clase activa en este momento para este alumno' };
     }
 
-    // Verificar registro duplicado
+    console.log('[SENSOR] ✅ Horario encontrado:', horario.id, horario.materia_nombre);
+
     const [existente] = await db.query(
       'SELECT id, tipo FROM asistencias WHERE alumno_id = ? AND horario_id = ? AND fecha = ?',
       [alumno.id, horario.id, hoy]
     );
-
     if (existente) {
-      io.emit('asistencia:duplicada', {
-        alumno_id: alumno.id,
-        alumno:    `${alumno.nombre} ${alumno.apellido_pat}`,
-        tipo:      existente.tipo
-      });
+      io.emit('asistencia:duplicada', { alumno_id: alumno.id, alumno: `${alumno.nombre} ${alumno.apellido_pat}`, tipo: existente.tipo });
       return { ok: false, mensaje: `Ya tiene ${existente.tipo} registrada hoy en esta clase` };
     }
 
-    // Determinar tipo usando tolerancia_min de la BD (default 10)
     const [hIni_h, hIni_m] = horario.hora_inicio.split(':').map(Number);
-    const inicioMin  = hIni_h * 60 + hIni_m;
     const [hora_h, hora_m] = hora.split(':').map(Number);
-    const ahoraMin   = hora_h * 60 + hora_m;
     const tolerancia = horario.tolerancia_min || 10;
-    const tipo       = (ahoraMin - inicioMin) > tolerancia ? 'retardo' : 'asistencia';
+    const tipo       = ((hora_h * 60 + hora_m) - (hIni_h * 60 + hIni_m)) > tolerancia ? 'retardo' : 'asistencia';
 
-    // Insertar asistencia
     const result = await db.query(
       `INSERT INTO asistencias (alumno_id, horario_id, fecha, hora_entrada, tipo, registrado_por)
        VALUES (?, ?, ?, ?, ?, 'sensor')`,
       [alumno.id, horario.id, hoy, hora, tipo]
     );
 
-    // Notificar a todos los clientes web
     io.emit('asistencia:nueva', {
       id:           result.insertId,
       alumno_id:    alumno.id,
@@ -235,7 +224,6 @@ exports.registrarDesdeSensor = async (alumno, io) => {
       fecha:        hoy
     });
 
-    // Cooldown de 5 segundos para evitar doble lectura
     const readerState = require('./reader-state');
     readerState.startCooldown(5);
     io.emit('reader:cooldown', readerState.getState());
@@ -243,6 +231,7 @@ exports.registrarDesdeSensor = async (alumno, io) => {
     return { ok: true, tipo, alumno_id: alumno.id };
 
   } catch (e) {
+    console.error('[SENSOR] Error:', e.message);
     return { ok: false, mensaje: e.message };
   }
 };
