@@ -2,15 +2,25 @@ document.addEventListener("DOMContentLoaded", () => {
   SIGA.renderSidebar("huellas");
 });
 
-// ── DOM (se asigna cuando el script carga; el HTML ya existe en este punto) ──
-const estadoLectorDetalle    = document.getElementById("estadoLectorDetalle");
-const tablaAsistenciasHoy    = document.getElementById("tablaAsistenciasHoy");
+// ── DOM ─────────────────────────────────────────────────────────────
+const estadoLectorDetalle     = document.getElementById("estadoLectorDetalle");
+const tablaAsistenciasHoy     = document.getElementById("tablaAsistenciasHoy");
 const btnRefrescarAsistencias = document.getElementById("btnRefrescarAsistencias");
-const estadoAsistencias      = document.getElementById("estadoAsistencias");
+const estadoAsistencias       = document.getElementById("estadoAsistencias");
 
 let asistenciasHoy = [];
 let timer = null;
 
+// ── Helper fecha ────────────────────────────────────────────────
+function fechaHoyISO() {
+  const hoy = new Date();
+  const y   = hoy.getFullYear();
+  const m   = String(hoy.getMonth() + 1).padStart(2, "0");
+  const d   = String(hoy.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+// ── UI helpers ────────────────────────────────────────────────────
 function mostrarEstado(msg, tipo = "info", autoHide = true, delay = 4000) {
   if (!estadoAsistencias) return;
   clearTimeout(timer);
@@ -34,6 +44,7 @@ function tipoBadge(tipo) {
   return `<span class="badge ${cls}">${tipo}</span>`;
 }
 
+// ── Estado del lector ──────────────────────────────────────────────
 async function cargarEstadoLector() {
   try {
     const res = await SIGA.getReaderStatus();
@@ -50,9 +61,11 @@ async function cargarEstadoLector() {
   }
 }
 
+// ── Tabla de asistencias ──────────────────────────────────────────
 async function cargarAsistenciasHoy() {
   try {
-    const res = await SIGA.api("/api/asistencias/hoy");
+    const hoy = fechaHoyISO();
+    const res = await SIGA.api(`/api/asistencias?fecha=${hoy}`);
     asistenciasHoy = res.datos || [];
     renderTabla();
   } catch (e) {
@@ -61,6 +74,7 @@ async function cargarAsistenciasHoy() {
 }
 
 function renderTabla() {
+  if (!tablaAsistenciasHoy) return;
   if (!asistenciasHoy.length) {
     tablaAsistenciasHoy.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;">No hay asistencias registradas hoy</td></tr>';
     return;
@@ -79,7 +93,7 @@ function renderTabla() {
 
 btnRefrescarAsistencias.addEventListener("click", cargarAsistenciasHoy);
 
-// ── Eventos de asistencia ────────────────────────────────────────────
+// ── Eventos socket ──────────────────────────────────────────────────
 socket.on("asistencia:nueva", async (data) => {
   await cargarAsistenciasHoy();
   const tipoLabel = data.tipo === "retardo" ? "⏰ Retardo" : "✅ Asistencia";
@@ -102,10 +116,11 @@ socket.on("asistencia:error", (data) => {
 });
 
 // ── Estado del lector ──────────────────────────────────────────────────
-["reader:mode","reader:cooldown","sensor:status","reader:state",
- "sensor:enroll_ok","sensor:delete_ok","sensor:enroll_error"]
+["reader:mode", "reader:cooldown", "sensor:status", "reader:state",
+ "sensor:enroll_ok", "sensor:delete_ok", "sensor:enroll_error"]
   .forEach(ev => socket.on(ev, cargarEstadoLector));
 
+// ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
   await cargarEstadoLector();
   await cargarAsistenciasHoy();
