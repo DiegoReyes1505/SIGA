@@ -95,8 +95,9 @@ btnRefrescarAsistencias.addEventListener("click", cargarAsistenciasHoy);
 
 socket.on("asistencia:nueva", async (data) => {
   await cargarAsistenciasHoy();
+  const tipoLabel = data.tipo === "retardo" ? "⏰ Retardo" : "✅ Asistencia";
   mostrarEstado(
-    `Asistencia registrada: ${data.nombre} (${data.tipo})`,
+    `${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0, 5) : ""})`,
     "ok",
     true,
     4000,
@@ -117,6 +118,7 @@ socket.on("asistencia:error", (data) => {
   "reader:mode",
   "reader:cooldown",
   "sensor:status",
+  "reader:state",
   "sensor:enroll_ok",
   "sensor:delete_ok",
   "sensor:enroll_error",
