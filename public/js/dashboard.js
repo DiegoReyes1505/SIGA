@@ -48,6 +48,14 @@ Chart.defaults.color       = "#9ca3af";
 Chart.defaults.borderColor = "#374151";
 
 // ── Helpers ────────────────────────────────────────────────────────
+function fechaHoyISO() {
+  const hoy = new Date();
+  const y   = hoy.getFullYear();
+  const m   = String(hoy.getMonth() + 1).padStart(2, "0");
+  const d   = String(hoy.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function formatFechaCorta(fechaStr) {
   const f = String(fechaStr).slice(0, 10);
   const [, m, d] = f.split("-");
@@ -224,13 +232,15 @@ async function cargarRetardosCriticos() {
 // ── Feed en vivo ─────────────────────────────────────────────────────
 async function cargarFeedInicial() {
   try {
-    const res = await SIGA.api("/api/asistencias/hoy");
+    // Endpoint correcto: GET /api/asistencias?fecha=YYYY-MM-DD
+    const hoy = fechaHoyISO();
+    const res = await SIGA.api(`/api/asistencias?fecha=${hoy}`);
     feedItems = (res.datos || []).slice(0, MAX_FEED).map(a => ({
-      alumno:      a.alumno,
-      matricula:   a.matricula,
-      grupo:       a.grupo,
-      materia:     a.materia,
-      tipo:        a.tipo,
+      alumno:       a.alumno,
+      matricula:    a.matricula,
+      grupo:        a.grupo,
+      materia:      a.materia,
+      tipo:         a.tipo,
       hora_entrada: a.hora_entrada,
     }));
     renderFeed();
@@ -238,12 +248,13 @@ async function cargarFeedInicial() {
 }
 
 function renderFeed() {
+  if (!feedAsistencias) return; // guarda por si el elemento no existe
   if (!feedItems.length) {
     feedAsistencias.innerHTML = '<p class="muted-label" style="padding:12px 0;">Sin asistencias hoy.</p>';
-    feedContador.textContent  = "";
+    if (feedContador) feedContador.textContent = "";
     return;
   }
-  feedContador.textContent  = `${feedItems.length} hoy`;
+  if (feedContador) feedContador.textContent = `${feedItems.length} hoy`;
   feedAsistencias.innerHTML = feedItems.map(a => `
     <div class="feed-item">
       <span class="feed-hora">${a.hora_entrada ? a.hora_entrada.slice(0,5) : "--:--"}</span>
@@ -254,14 +265,14 @@ function renderFeed() {
   `).join("");
 }
 
-// Evento en vivo — campo correcto: data.alumno (no data.nombre)
+// ── Evento en vivo ────────────────────────────────────────────────────
 socket.on("asistencia:nueva", (data) => {
   feedItems.unshift({
-    alumno:      data.alumno,
-    matricula:   data.matricula,
-    grupo:       data.grupo,
-    materia:     data.materia,
-    tipo:        data.tipo,
+    alumno:       data.alumno,
+    matricula:    data.matricula,
+    grupo:        data.grupo,
+    materia:      data.materia,
+    tipo:         data.tipo,
     hora_entrada: data.hora_entrada,
   });
   if (feedItems.length > MAX_FEED) feedItems.pop();
