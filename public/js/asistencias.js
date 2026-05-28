@@ -1,6 +1,28 @@
 const DIAS_FULL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 const POR_PAGE  = 30;
 
+// ── Variables compartidas entre DOMContentLoaded y los listeners del socket ──
+let todas = [];
+let pagina = 0;
+let buscarFn = null; // se asigna cuando el DOM está listo
+
+// ── Listeners Socket.io FUERA del DOMContentLoaded ───────────────────────────
+// Así se registran en cuanto el script carga, sin esperar al DOM.
+window.socket.on('asistencia:nueva', data => {
+  const tipoLabel = data.tipo === 'retardo' ? '⏰ Retardo' : '✅ Asistencia';
+  SIGA.toast(`${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0,5) : ''})`, 'ok');
+  if (todas.length > 0 && buscarFn) buscarFn();
+});
+
+window.socket.on('asistencia:sin_horario', data => {
+  SIGA.toast(`⚠️ Sin horario activo — ${data.alumno} (${data.hora})`, 'error');
+});
+
+window.socket.on('asistencia:duplicada', data => {
+  SIGA.toast(`ℹ️ Ya registrado — ${data.alumno} tiene ${data.tipo} hoy`, 'info');
+});
+
+// ── Lógica de UI ─────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   SIGA.renderSidebar('asistencias');
 
@@ -31,8 +53,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mTipo         = document.getElementById('m_tipo');
   const mHoraEnt      = document.getElementById('m_hora_entrada');
   const mNota         = document.getElementById('m_nota');
-
-  let todas = []; let pagina = 0;
 
   // ── Poblar filtros ───────────────────────────────────────────
   const rg = await SIGA.api('/api/grupos');
@@ -76,6 +96,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderTabla();
     } catch (e) { SIGA.toast(e.message, 'error'); }
   }
+
+  // Exponer buscar para que los listeners del socket puedan llamarlo
+  buscarFn = buscar;
 
   function renderTabla() {
     const inicio = pagina * POR_PAGE;
@@ -202,25 +225,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { await SIGA.api(`/api/asistencias/${id}`, { method: 'DELETE' }); SIGA.toast('Registro eliminado', 'ok'); buscar(); }
     catch (e) { SIGA.toast(e.message, 'error'); }
   };
-
-  // ── Listeners Socket.io del sensor ──────────────────────────
-  // Asistencia registrada correctamente por el sensor
-  socket.on('asistencia:nueva', data => {
-    const tipoLabel = data.tipo === 'retardo' ? '⏰ Retardo' : '✅ Asistencia';
-    SIGA.toast(`${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0,5) : ''})`, 'ok');
-    // Si hay una búsqueda activa, refrescar la tabla automáticamente
-    if (todas.length > 0) buscar();
-  });
-
-  // No hay clase activa en este momento
-  socket.on('asistencia:sin_horario', data => {
-    SIGA.toast(`⚠️ Sin horario activo — ${data.alumno} (${data.hora})`, 'error');
-  });
-
-  // Intento de registro duplicado
-  socket.on('asistencia:duplicada', data => {
-    SIGA.toast(`ℹ️ Ya registrado — ${data.alumno} tiene ${data.tipo} hoy`, 'info');
-  });
 
   // Iniciar con tabla vacía y mensaje guía
   renderTabla();
