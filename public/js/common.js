@@ -54,24 +54,7 @@ window.SIGA = {
   },
 };
 
-// ── Eventos del sensor (todas las páginas) ───────────────────────────────
-// Registro exitoso por sensor
-window.socket.on('asistencia:nueva', data => {
-  const tipoLabel = data.tipo === 'retardo' ? '⏰ Retardo' : '✅ Asistencia';
-  SIGA.toast(`${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0, 5) : ''})`, 'ok');
-});
-
-// Sin horario activo en este momento
-window.socket.on('asistencia:sin_horario', data => {
-  SIGA.toast(`⚠️ Sin horario activo — ${data.alumno} (${data.hora})`, 'error');
-});
-
-// Asistencia duplicada
-window.socket.on('asistencia:duplicada', data => {
-  SIGA.toast(`ℹ️ Ya registrado — ${data.alumno} tiene ${data.tipo} hoy`, 'info');
-});
-
-// ── Estado del lector ─────────────────────────────────────────────────
+// ── Estado del lector ─────────────────────────────────────────────────────
 let cooldownInterval = null;
 let pintandoEstado = false;
 let pollingTimeout = null;
