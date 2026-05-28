@@ -2,15 +2,17 @@ document.addEventListener("DOMContentLoaded", () => {
   SIGA.renderSidebar("huellas");
 });
 
-const estadoLectorDetalle = document.getElementById("estadoLectorDetalle");
-const tablaAsistenciasHoy = document.getElementById("tablaAsistenciasHoy");
+// ── DOM (se asigna cuando el script carga; el HTML ya existe en este punto) ──
+const estadoLectorDetalle    = document.getElementById("estadoLectorDetalle");
+const tablaAsistenciasHoy    = document.getElementById("tablaAsistenciasHoy");
 const btnRefrescarAsistencias = document.getElementById("btnRefrescarAsistencias");
-const estadoAsistencias = document.getElementById("estadoAsistencias");
+const estadoAsistencias      = document.getElementById("estadoAsistencias");
 
 let asistenciasHoy = [];
 let timer = null;
 
 function mostrarEstado(msg, tipo = "info", autoHide = true, delay = 4000) {
+  if (!estadoAsistencias) return;
   clearTimeout(timer);
   estadoAsistencias.classList.remove("hidden");
   estadoAsistencias.textContent = msg;
@@ -28,18 +30,14 @@ function mostrarEstado(msg, tipo = "info", autoHide = true, delay = 4000) {
 }
 
 function tipoBadge(tipo) {
-  const cls =
-    tipo === "asistencia" ? "ok"
-    : tipo === "retardo"  ? "warn"
-    : tipo === "permiso"  ? "info"
-    : "no";
+  const cls = tipo === "asistencia" ? "ok" : tipo === "retardo" ? "warn" : tipo === "permiso" ? "info" : "no";
   return `<span class="badge ${cls}">${tipo}</span>`;
 }
 
 async function cargarEstadoLector() {
   try {
     const res = await SIGA.getReaderStatus();
-    const s = res.datos || res;
+    const s   = res.datos || res;
     estadoLectorDetalle.textContent = !s.online
       ? "Lector desconectado."
       : s.cooldown_active
@@ -53,15 +51,18 @@ async function cargarEstadoLector() {
 }
 
 async function cargarAsistenciasHoy() {
-  const res = await SIGA.api("/api/asistencias/hoy");
-  asistenciasHoy = res.datos;
-  renderTabla();
+  try {
+    const res = await SIGA.api("/api/asistencias/hoy");
+    asistenciasHoy = res.datos || [];
+    renderTabla();
+  } catch (e) {
+    console.error("Error cargando asistencias:", e);
+  }
 }
 
 function renderTabla() {
   if (!asistenciasHoy.length) {
-    tablaAsistenciasHoy.innerHTML =
-      '<tr><td colspan="6" style="text-align:center;color:#9ca3af;">No hay asistencias registradas hoy</td></tr>';
+    tablaAsistenciasHoy.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9ca3af;">No hay asistencias registradas hoy</td></tr>';
     return;
   }
   tablaAsistenciasHoy.innerHTML = asistenciasHoy.map(a => `
@@ -78,12 +79,12 @@ function renderTabla() {
 
 btnRefrescarAsistencias.addEventListener("click", cargarAsistenciasHoy);
 
-// ── Eventos de asistencia ────────────────────────────────────────────────
+// ── Eventos de asistencia ────────────────────────────────────────────
 socket.on("asistencia:nueva", async (data) => {
   await cargarAsistenciasHoy();
   const tipoLabel = data.tipo === "retardo" ? "⏰ Retardo" : "✅ Asistencia";
   mostrarEstado(
-    `${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0, 5) : ""})`,
+    `${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0,5) : ""})`,
     "ok", true, 4000
   );
 });
@@ -100,7 +101,7 @@ socket.on("asistencia:error", (data) => {
   mostrarEstado(data.mensaje || "No se pudo registrar la asistencia", "error", true, 5000);
 });
 
-// ── Estado del lector ────────────────────────────────────────────────────
+// ── Estado del lector ──────────────────────────────────────────────────
 ["reader:mode","reader:cooldown","sensor:status","reader:state",
  "sensor:enroll_ok","sensor:delete_ok","sensor:enroll_error"]
   .forEach(ev => socket.on(ev, cargarEstadoLector));
