@@ -203,6 +203,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     catch (e) { SIGA.toast(e.message, 'error'); }
   };
 
+  // ── Listeners Socket.io del sensor ──────────────────────────
+  // Asistencia registrada correctamente por el sensor
+  socket.on('asistencia:nueva', data => {
+    const tipoLabel = data.tipo === 'retardo' ? '⏰ Retardo' : '✅ Asistencia';
+    SIGA.toast(`${tipoLabel} — ${data.alumno} (${data.materia}, ${data.hora_entrada ? data.hora_entrada.slice(0,5) : ''})`, 'ok');
+    // Si hay una búsqueda activa, refrescar la tabla automáticamente
+    if (todas.length > 0) buscar();
+  });
+
+  // No hay clase activa en este momento
+  socket.on('asistencia:sin_horario', data => {
+    SIGA.toast(`⚠️ Sin horario activo — ${data.alumno} (${data.hora})`, 'error');
+  });
+
+  // Intento de registro duplicado
+  socket.on('asistencia:duplicada', data => {
+    SIGA.toast(`ℹ️ Ya registrado — ${data.alumno} tiene ${data.tipo} hoy`, 'info');
+  });
+
   // Iniciar con tabla vacía y mensaje guía
   renderTabla();
 });
