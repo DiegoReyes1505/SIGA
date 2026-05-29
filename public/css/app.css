@@ -279,7 +279,7 @@ td {
   background: #7f1d1d;
 }
 
-/* ── Módulo permisos ───────────────────────────── */
+/* ── Módulo permisos ───────────────────────────────── */
 
 .checks {
   display: grid;
@@ -341,9 +341,8 @@ td {
   }
 }
 
-/* ── Módulo historial ─────────────────────────────────────── */
+/* ── Módulo historial ─────────────────────────────────────────── */
 
-/* Grid de filtros: 3 columnas en desktop, 1 en mobile */
 .filters-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -361,7 +360,6 @@ td {
   font-weight: bold;
 }
 
-/* Botones de acción de filtros */
 .filters-actions {
   display: flex;
   gap: 10px;
@@ -369,38 +367,76 @@ td {
   margin-top: 4px;
 }
 
-/* Botón pequeño para paginación */
 .btn.btn-sm {
   padding: 6px 12px;
   font-size: 13px;
 }
 
-/* Botón deshabilitado */
 .btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* Paginación */
+/* Paginación principal */
 .paginacion {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+/* Bloque "Página [input] de N  [Ir]" */
+.pag-ir-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Input numérico para "Ir a página" */
+.input-ir-pagina {
+  width: 60px;
+  padding: 5px 8px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  /* quitar flechas nativas del input number */
+  -moz-appearance: textfield;
+}
+.input-ir-pagina::-webkit-outer-spin-button,
+.input-ir-pagina::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .pagina-info {
   color: var(--muted);
   font-size: 14px;
-  min-width: 120px;
-  text-align: center;
+  white-space: nowrap;
 }
 
-/* Resumen de tipos en la sección de totales */
+/* Selector "Mostrar X registros" en el toolbar */
+.por-pagina-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.por-pagina-wrap select {
+  width: auto;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
 .resumen-asistencias {
   display: flex;
   flex-wrap: wrap;
@@ -408,20 +444,17 @@ td {
   align-items: center;
 }
 
-/* Label de total de registros en el toolbar */
 .muted-label {
   color: var(--muted);
   font-size: 14px;
 }
 
-/* Celda vacía centrada en tabla */
 .td-empty {
   text-align: center;
   color: var(--muted);
   padding: 24px 12px;
 }
 
-/* Badge warn (retardo) — faltaba en el CSS original */
 .badge.warn {
   background: #78350f;
 }
