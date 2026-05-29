@@ -77,7 +77,20 @@
         <section class="card">
           <div class="toolbar">
             <h2 style="margin: 0">Resultados</h2>
-            <span id="totalRegistros" class="muted-label"></span>
+            <div class="toolbar-right">
+              <span id="totalRegistros" class="muted-label"></span>
+              <!-- Selector de registros por página -->
+              <div class="por-pagina-wrap" id="porPaginaWrap" style="display:none">
+                <label for="selPorPagina">Mostrar</label>
+                <select id="selPorPagina">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span>registros</span>
+              </div>
+            </div>
           </div>
 
           <div id="estadoHistorial" class="status hidden"></div>
@@ -109,7 +122,20 @@
           <!-- Paginación -->
           <div id="paginacion" class="paginacion hidden">
             <button class="btn btn-sm" id="btnAnterior">← Anterior</button>
-            <span id="infoPagina" class="pagina-info"></span>
+
+            <div class="pag-ir-wrap">
+              <span class="muted-label">Página</span>
+              <input
+                type="number"
+                id="inputIrPagina"
+                class="input-ir-pagina"
+                min="1"
+                value="1"
+              />
+              <span id="infoPagina" class="pagina-info"></span>
+              <button class="btn btn-sm" id="btnIr">Ir</button>
+            </div>
+
             <button class="btn btn-sm" id="btnSiguiente">Siguiente →</button>
           </div>
         </section>
