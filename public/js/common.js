@@ -31,7 +31,6 @@ window.SIGA = {
       { key: 'materias',   label: '📚 Materias',            href: '/materias.html' },
       { key: 'horarios',   label: '🕐 Horarios',            href: '/horarios.html' },
       { key: 'huellas',    label: '🖐 Huellas y asist.',    href: '/huellas-asistencias.html' },
-      { key: 'asistencias',label: '📋 Asistencias',         href: '/asistencias.html' },
       { key: 'permisos',   label: '📝 Permisos',            href: '/permisos.html' },
       { key: 'historial',  label: '📊 Historial',           href: '/historial.html' },
       { key: 'dashboard',  label: '🏠 Dashboard',           href: '/dashboard.html' },
